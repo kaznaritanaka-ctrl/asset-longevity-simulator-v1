@@ -1,0 +1,40 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "資産寿命",
+      "hasCanvas": false,
+      "bodyTextLen": 785,
+      "bodyTextHash": "8c4dd8fdd23dc8d56e86ae6288b610c1595f584c3af450412279c569b6297a36",
+      "bodyTextPrefix": "資産寿命 FIRE破綻シミュレーター 形成期と取り崩し期を分け、資産クラスごとにリターンとリスクを置いて破綻確率を測る 生存率 ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "資産寿命",
+      "hasCanvas": false,
+      "bodyTextLen": 711,
+      "bodyTextHash": "99f8ad19e5a4e77760de7d3b5da656ee07a41e49415707aae5825c445b00ca91",
+      "bodyTextPrefix": "資産寿命 FIRE破綻シミュレーター 生存率 リンク X — 条件を確認してから、再計算で経路を回す。 人生の区切り 形成 15",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [
+    "BRAND NOTE: no custom public/og.jpg — the platform will serve the og.grok.me placeholder. Custom cards are the default for games of every kind (DOM board/word games included), whimsical apps, creative tools, and brand-forward pages — only plain utilities (converters, CRUD trackers, admin dashboards) keep the placeholder. If this app is not a plain utility, finish the brand-asset pass per /workspace/.grok/skills/og/SKILL.md."
+  ],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": false,
+  "baselineReasons": []
+}
