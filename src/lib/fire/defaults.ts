@@ -1,8 +1,4 @@
-import {
-  assetsFromWindow,
-  DEFAULT_WINDOW,
-  windowById,
-} from "./sourced-params";
+import { assetsFromWindow, DEFAULT_WINDOW, windowById } from "./sourced-params";
 import type { AssetClass, Plan, RuinRule } from "./types";
 
 export const ASSET_COLORS: Record<string, string> = {
@@ -69,10 +65,14 @@ export const PRESETS: { id: string; name: string; hint: string; apply: (plan: Pl
     id: "balanced",
     name: "バランス型",
     hint: "形成期は株式7割、取崩期は株式55%",
-    apply: (plan) => ({
-      ...plan,
-      assets: assetsFromWindow(windowById(plan.dataWindow)),
-    }),
+    apply: (plan) => {
+      const win = windowById(plan.dataWindow);
+      return {
+        ...plan,
+        assets: assetsFromWindow(win),
+        correlations: win.correlations.map((row) => row.slice()),
+      };
+    },
   },
   {
     id: "equity",

@@ -2,6 +2,9 @@ import { createDefaultPlan, matchingPresetId, PRESETS } from "./defaults";
 import { formatPct } from "./format";
 import { assetsFromWindow, windowById, type DataWindowId } from "./sourced-params";
 import type { AssetClass, AssetKind, Plan, RuinRule, SimResult } from "./types";
+import { sanitizePlan } from "./validation";
+
+export { sanitizePlan } from "./validation";
 
 const WINDOW_CODE: Record<DataWindowId, string> = { long: "l", postwar: "p", float: "f" };
 const WINDOW_FROM: Record<string, DataWindowId> = { l: "long", p: "postwar", f: "float" };
@@ -44,7 +47,9 @@ function nearly(a: number, b: number): boolean {
 
 function sameCorr(a: number[][], b: number[][]): boolean {
   if (a.length !== b.length) return false;
-  return a.every((row, i) => row.length === b[i]!.length && row.every((v, j) => nearly(v, b[i]![j]!)));
+  return a.every(
+    (row, i) => row.length === b[i]!.length && row.every((v, j) => nearly(v, b[i]![j]!)),
+  );
 }
 
 function catalogAssets(plan: Plan): AssetClass[] {
@@ -69,7 +74,9 @@ function statsMatchCatalog(plan: Plan): boolean {
 function weightsMatch(plan: Plan, other: AssetClass[]): boolean {
   if (plan.assets.length !== other.length) return false;
   return plan.assets.every(
-    (a, i) => nearly(a.accumWeight, other[i]!.accumWeight) && nearly(a.withdrawWeight, other[i]!.withdrawWeight),
+    (a, i) =>
+      nearly(a.accumWeight, other[i]!.accumWeight) &&
+      nearly(a.withdrawWeight, other[i]!.withdrawWeight),
   );
 }
 
@@ -98,7 +105,8 @@ function packRuin(rules: RuinRule[]): CompactRuin[] {
 function unpackRuin(rows: CompactRuin[]): RuinRule[] {
   return rows.map((row, i) => {
     const [type, ...nums] = row;
-    if (type === "b") return { id: `b-${i}`, type: "below_at_age", age: nums[0] ?? 100, amount: nums[1] ?? 0 };
+    if (type === "b")
+      return { id: `b-${i}`, type: "below_at_age", age: nums[0] ?? 100, amount: nums[1] ?? 0 };
     if (type === "y") return { id: `y-${i}`, type: "years_of_spend", years: nums[0] ?? 1 };
     return { id: `d-${i}`, type: "depleted", threshold: nums[0] ?? 0 };
   });
@@ -143,7 +151,8 @@ export function compactPlan(plan: Plan): Compact {
   const win = windowById(plan.dataWindow);
   if (!sameCorr(plan.correlations, win.correlations)) out.co = plan.correlations;
 
-  if (ruinSignature(plan.ruinRules) !== ruinSignature(defaultRuin())) out.ru = packRuin(plan.ruinRules);
+  if (ruinSignature(plan.ruinRules) !== ruinSignature(defaultRuin()))
+    out.ru = packRuin(plan.ruinRules);
   return out;
 }
 
@@ -222,15 +231,6 @@ function fromB64url(raw: string): Uint8Array {
   return out;
 }
 
-export function sanitizePlan(parsed: Partial<Plan>): Plan | null {
-  if (!parsed || !Array.isArray(parsed.assets) || parsed.assets.length === 0) return null;
-  const plan = { ...createDefaultPlan(), ...parsed };
-  if (!plan.dataWindow) plan.dataWindow = "long";
-  if (plan.taxRatePct == null) plan.taxRatePct = 20;
-  if (plan.sex !== "female" && plan.sex !== "male") plan.sex = "male";
-  return plan;
-}
-
 export function encodePlan(plan: Plan): string {
   const json = JSON.stringify(compactPlan(plan));
   return `c1.${toB64url(new TextEncoder().encode(json))}`;
@@ -240,13 +240,20 @@ export function decodePlan(token: string): Plan | null {
   try {
     if (token.startsWith("c1.")) {
       const json = new TextDecoder().decode(fromB64url(token.slice(3)));
-      return expandPlan(JSON.parse(json) as Compact);
+      return sanitizePlan(expandPlan(JSON.parse(json) as Compact));
     }
     const json = new TextDecoder().decode(fromB64url(token));
     return sanitizePlan(JSON.parse(json) as Partial<Plan>);
   } catch {
     return null;
   }
+}
+
+export function hasPlanInLocation(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    new URLSearchParams(window.location.search).has("p") || window.location.hash.includes("p=")
+  );
 }
 
 export function readPlanFromLocation(): Plan | null {

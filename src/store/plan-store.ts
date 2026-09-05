@@ -2,9 +2,10 @@ import { create } from "zustand";
 import { createDefaultPlan, PRESETS } from "@/lib/fire/defaults";
 import { runSimAsync, warmupWorker } from "@/lib/fire/run-sim";
 import { resizeCorrelations } from "@/lib/fire/math";
-import { readPlanFromLocation, sanitizePlan } from "@/lib/fire/share";
+import { hasPlanInLocation, readPlanFromLocation, sanitizePlan } from "@/lib/fire/share";
 import { assetsFromWindow, windowById, type DataWindowId } from "@/lib/fire/sourced-params";
 import type { AssetClass, Plan, RuinRule, SimResult } from "@/lib/fire/types";
+import { validatePlan, type PlanValidationIssue } from "@/lib/fire/validation";
 
 const STORAGE_KEY = "shisan-jumyou-plan-v2";
 
@@ -18,6 +19,9 @@ type PlanState = {
   activated: boolean;
   fromShare: boolean;
   storyNonce: number;
+  resultStale: boolean;
+  error: string | null;
+  validationIssues: PlanValidationIssue[];
   patchPlan: (patch: Partial<Plan>) => void;
   replacePlan: (plan: Plan) => void;
   updateAsset: (id: string, patch: Partial<AssetClass>) => void;
@@ -45,6 +49,16 @@ function persist(plan: Plan) {
   }
 }
 
+function updatedPlanState(plan: Plan, result: SimResult | null) {
+  persist(plan);
+  return {
+    plan,
+    resultStale: result !== null,
+    error: null,
+    validationIssues: validatePlan(plan),
+  };
+}
+
 function newId(prefix: string): string {
   return `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -66,16 +80,17 @@ export const usePlanStore = create<PlanState>((set, get) => ({
   activated: false,
   fromShare: false,
   storyNonce: 0,
+  resultStale: false,
+  error: null,
+  validationIssues: [],
 
   patchPlan: (patch) => {
     const plan = { ...get().plan, ...patch };
-    persist(plan);
-    set({ plan });
+    set(updatedPlanState(plan, get().result));
   },
 
   replacePlan: (plan) => {
-    persist(plan);
-    set({ plan });
+    set(updatedPlanState(plan, get().result));
   },
 
   updateAsset: (id, patch) => {
@@ -83,8 +98,7 @@ export const usePlanStore = create<PlanState>((set, get) => ({
       ...get().plan,
       assets: get().plan.assets.map((a) => (a.id === id ? { ...a, ...patch } : a)),
     };
-    persist(plan);
-    set({ plan });
+    set(updatedPlanState(plan, get().result));
   },
 
   addAsset: () => {
@@ -105,8 +119,7 @@ export const usePlanStore = create<PlanState>((set, get) => ({
       assets,
       correlations: resizeCorrelations(plan.correlations, assets.length, 0.25),
     };
-    persist(next);
-    set({ plan: next });
+    set(updatedPlanState(next, get().result));
   },
 
   removeAsset: (id) => {
@@ -119,8 +132,7 @@ export const usePlanStore = create<PlanState>((set, get) => ({
       .filter((_, i) => i !== idx)
       .map((row) => row.filter((_, j) => j !== idx));
     const next = { ...plan, assets, correlations };
-    persist(next);
-    set({ plan: next });
+    set(updatedPlanState(next, get().result));
   },
 
   setCorrelation: (i, j, value) => {
@@ -132,8 +144,7 @@ export const usePlanStore = create<PlanState>((set, get) => ({
     correlations[i]![j] = v;
     correlations[j]![i] = v;
     const next = { ...plan, correlations };
-    persist(next);
-    set({ plan: next });
+    set(updatedPlanState(next, get().result));
   },
 
   updateRuinRule: (id, rule) => {
@@ -141,8 +152,7 @@ export const usePlanStore = create<PlanState>((set, get) => ({
       ...get().plan,
       ruinRules: get().plan.ruinRules.map((r) => (r.id === id ? rule : r)),
     };
-    persist(plan);
-    set({ plan });
+    set(updatedPlanState(plan, get().result));
   },
 
   addRuinRule: (type) => {
@@ -153,8 +163,7 @@ export const usePlanStore = create<PlanState>((set, get) => ({
     else if (type === "below_at_age") rule = { id, type, age: plan.endAge, amount: 0 };
     else rule = { id, type, years: 3 };
     const next = { ...plan, ruinRules: [...plan.ruinRules, rule] };
-    persist(next);
-    set({ plan: next });
+    set(updatedPlanState(next, get().result));
   },
 
   removeRuinRule: (id) => {
@@ -162,16 +171,14 @@ export const usePlanStore = create<PlanState>((set, get) => ({
       ...get().plan,
       ruinRules: get().plan.ruinRules.filter((r) => r.id !== id),
     };
-    persist(plan);
-    set({ plan });
+    set(updatedPlanState(plan, get().result));
   },
 
   applyPreset: (id) => {
     const preset = PRESETS.find((p) => p.id === id);
     if (!preset) return;
     const plan = preset.apply(get().plan);
-    persist(plan);
-    set({ plan });
+    set(updatedPlanState(plan, get().result));
   },
 
   applyDataWindow: (id) => {
@@ -187,15 +194,13 @@ export const usePlanStore = create<PlanState>((set, get) => ({
       assets,
       correlations: resizeCorrelations(win.correlations, assets.length, 0.2),
     };
-    persist(next);
-    set({ plan: next });
+    set(updatedPlanState(next, get().result));
   },
 
   reroll: () => {
     const plan = { ...get().plan, seed: (Math.random() * 0xffffffff) >>> 0 };
-    persist(plan);
     skipAutoRun = true;
-    set({ plan, storyNonce: 0 });
+    set({ ...updatedPlanState(plan, get().result), storyNonce: 0 });
     get().run();
   },
 
@@ -206,23 +211,47 @@ export const usePlanStore = create<PlanState>((set, get) => ({
 
   reset: () => {
     const plan = createDefaultPlan();
-    persist(plan);
-    set({ plan });
+    set(updatedPlanState(plan, get().result));
   },
 
   run: () => {
     const id = ++runGen;
-    const { plan, storyNonce } = get();
-    set({ status: "running", activated: true });
+    const { plan, storyNonce, result } = get();
+    const validationIssues = validatePlan(plan);
+    if (validationIssues.length > 0) {
+      set({
+        status: result ? "done" : "idle",
+        activated: true,
+        resultStale: result !== null,
+        error: "入力条件を確認してください。修正後に自動で再計算します。",
+        validationIssues,
+      });
+      return;
+    }
+    set({
+      status: "running",
+      activated: true,
+      resultStale: result !== null,
+      error: null,
+      validationIssues: [],
+    });
     void runSimAsync(plan, storyNonce)
       .then((result) => {
         if (id !== runGen) return;
-        set({ result, status: "done" });
+        if (plan !== get().plan) {
+          set({ status: get().result ? "done" : "idle", resultStale: get().result !== null });
+          return;
+        }
+        set({ result, status: "done", resultStale: false, error: null });
       })
       .catch((err) => {
         if (id !== runGen) return;
         if (err instanceof DOMException && err.name === "AbortError") return;
-        set({ status: get().result ? "done" : "idle" });
+        set({
+          status: get().result ? "done" : "idle",
+          resultStale: get().result !== null,
+          error: err instanceof Error ? err.message : "計算中にエラーが発生しました。",
+        });
       });
   },
 
@@ -236,20 +265,43 @@ export const usePlanStore = create<PlanState>((set, get) => ({
     const shared = readPlanFromLocation();
     if (shared) {
       persist(shared);
-      set({ plan: shared, hydrated: true, status: "idle", fromShare: true });
+      set({
+        plan: shared,
+        hydrated: true,
+        status: "idle",
+        fromShare: true,
+        validationIssues: [],
+        error: null,
+      });
+      return;
+    }
+    if (hasPlanInLocation()) {
+      set({
+        hydrated: true,
+        error: "共有リンクの条件を読み込めませんでした。URLが壊れている可能性があります。",
+      });
       return;
     }
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const plan = sanitizePlan(JSON.parse(raw) as Partial<Plan>);
+        const plan = sanitizePlan(JSON.parse(raw));
         if (plan) {
-          set({ plan, hydrated: true, status: "idle" });
+          set({ plan, hydrated: true, status: "idle", validationIssues: [], error: null });
           return;
         }
+        set({
+          hydrated: true,
+          error: "保存されていた条件が不正なため、初期値を使用しています。",
+        });
+        return;
       }
     } catch {
-      /* keep default */
+      set({
+        hydrated: true,
+        error: "保存されていた条件を読み込めないため、初期値を使用しています。",
+      });
+      return;
     }
     set({ hydrated: true });
   },

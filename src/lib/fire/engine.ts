@@ -9,6 +9,7 @@ import {
   portfolioMoments,
 } from "./math";
 import { buildRuinStory } from "./story";
+import { validatePlan } from "./validation";
 
 function hitsRuin(rules: RuinRule[], wealth: number, age: number, annualSpend: number): boolean {
   for (const rule of rules) {
@@ -30,6 +31,10 @@ function realReturn(nominal: number, inflation: number, returnsAreNominal: boole
 }
 
 export function simulate(plan: Plan, storyNonce = 0): SimResult {
+  const validationIssues = validatePlan(plan);
+  if (validationIssues.length > 0) {
+    throw new Error(validationIssues[0]!.message);
+  }
   const currentAge = Math.round(plan.currentAge);
   const fireAge = Math.round(plan.fireAge);
   const endAge = Math.round(plan.endAge);

@@ -10,6 +10,7 @@ const coreTests = [
   "src/lib/fire/engine.test.ts",
   "src/lib/fire/math.test.ts",
   "src/lib/fire/share.test.ts",
+  "src/lib/fire/validation.test.ts",
   "src/lib/app-data/app-data.test.ts",
   "src/lib/auth/gate-identity.test.ts",
 ];

@@ -7,16 +7,19 @@ import { ShareButtons } from "./share-buttons";
 export function KpiHero() {
   const result = usePlanStore((s) => s.result);
   const status = usePlanStore((s) => s.status);
+  const resultStale = usePlanStore((s) => s.resultStale);
+  const error = usePlanStore((s) => s.error);
+  const validationIssues = usePlanStore((s) => s.validationIssues);
 
   const rate = result?.successRate ?? null;
-  const tone =
-    rate == null ? "mid" : rate >= 0.95 ? "survive" : rate >= 0.8 ? "mid" : "ruin";
+  const tone = rate == null ? "mid" : rate >= 0.95 ? "survive" : rate >= 0.8 ? "mid" : "ruin";
 
   return (
     <section className="rise-in min-w-0 rounded-xl bg-surface px-4 py-5 shadow-[var(--shadow-border)] sm:px-5 sm:py-6 md:px-8 md:py-7">
       <div className="mb-3 flex items-start justify-between gap-3">
         <p className="text-[11px] font-medium tracking-[0.16em] text-fg-subtle uppercase">
-          生存率{result ? ` · ${formatInt(result.trials)}経路` : ""}
+          生存率
+          {result ? (resultStale ? " · 前回結果" : ` · ${formatInt(result.trials)}経路`) : ""}
         </p>
         <ShareButtons />
       </div>
@@ -59,6 +62,30 @@ export function KpiHero() {
           </dl>
         ) : null}
       </div>
+
+      {error || validationIssues.length > 0 ? (
+        <div
+          role="alert"
+          className="mt-5 rounded-lg bg-ruin-soft px-4 py-3 text-sm leading-relaxed text-ruin"
+        >
+          <p className="font-medium">{error ?? "入力条件を確認してください。"}</p>
+          {validationIssues.length > 0 ? (
+            <ul className="mt-1 list-disc pl-5 text-xs">
+              {validationIssues.slice(0, 4).map((issue) => (
+                <li key={`${issue.field}:${issue.message}`}>{issue.message}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+
+      {result && resultStale && !error ? (
+        <div className="mt-5 rounded-lg bg-fire-soft px-4 py-3 text-xs leading-relaxed text-fg-muted">
+          {status === "running"
+            ? "新しい条件を計算中です。現在表示している数値とグラフは前回の結果です。"
+            : "条件が変更されています。現在表示している数値とグラフは前回の結果です。"}
+        </div>
+      ) : null}
 
       <div className="mt-6 border-t border-border pt-5">
         <AgeSlider />
