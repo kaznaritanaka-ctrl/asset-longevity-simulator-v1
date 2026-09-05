@@ -9,6 +9,7 @@ const registerTypescript = pathToFileURL(join(root, "scripts", "register-typescr
 const coreTests = [
   "src/lib/fire/engine.test.ts",
   "src/lib/fire/math.test.ts",
+  "src/lib/fire/risk-breakdown.test.ts",
   "src/lib/fire/share.test.ts",
   "src/lib/fire/validation.test.ts",
   "src/lib/app-data/app-data.test.ts",

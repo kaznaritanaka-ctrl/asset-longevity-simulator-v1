@@ -6,6 +6,7 @@ import { FanChart, type ChartScale } from "./fan-chart";
 import { ModelNotes } from "./model-notes";
 import { PercentileTable } from "./percentile-table";
 import { RuinStoryCard } from "./ruin-story";
+import { RuinRiskSummary } from "./ruin-risk-summary";
 import { SurvivalChart } from "./survival-chart";
 import { usePlanStore } from "@/store/plan-store";
 
@@ -39,6 +40,8 @@ export function ResultsPanel() {
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
+      <RuinRiskSummary result={result} />
+
       <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg text-fg">資産の経路</h2>
@@ -80,7 +83,9 @@ export function ResultsPanel() {
         <header className="mb-3 flex flex-wrap items-start justify-between gap-2">
           <div>
             <h2 className="font-display text-lg text-fg">資産寿命と寿命の比較</h2>
-            <p className="text-xs text-fg-muted">資産が持つ経路の割合と、生命表上でその年齢まで生きている割合</p>
+            <p className="text-xs text-fg-muted">
+              資産が持つ経路の割合と、生命表上でその年齢まで生きている割合
+            </p>
           </div>
           <SegmentedControl
             ariaLabel="性別"
