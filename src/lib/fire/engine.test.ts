@@ -26,6 +26,7 @@ function basePlan(patch: Partial<Plan> = {}): Plan {
     annualContribution: 0,
     annualSpend: 0,
     annualPension: 0,
+    taxRatePct: 0,
     assets: [oneAsset()],
     correlations: [[1]],
     trials: 200,
@@ -36,6 +37,18 @@ function basePlan(patch: Partial<Plan> = {}): Plan {
 }
 
 describe("simulate", () => {
+  it("is fully reproducible for the same plan and seed", () => {
+    const plan = basePlan({
+      currentAge: 40,
+      fireAge: 45,
+      endAge: 55,
+      assets: [oneAsset({ volatilityPct: 18 })],
+      seed: 42,
+    });
+
+    assert.deepEqual(simulate(plan), simulate(plan));
+  });
+
   it("grows deterministically with zero volatility", () => {
     const plan = basePlan({
       currentAge: 40,
@@ -77,6 +90,107 @@ describe("simulate", () => {
     });
     const result = simulate(plan);
     assert.ok(Math.abs(result.terminal.p50 - 200) < 1e-6);
+  });
+
+  it("applies beginning-of-year cashflow and switches phase at FIRE age", () => {
+    const plan = basePlan({
+      currentAge: 40,
+      fireAge: 41,
+      endAge: 42,
+      currentAssets: 100,
+      annualContribution: 50,
+      annualSpend: 20,
+      assets: [oneAsset({ expectedReturnPct: 10, volatilityPct: 0 })],
+    });
+
+    const result = simulate(plan);
+    // Age 40: (100 + 50) * 1.10 = 165. Age 41: (165 - 20) * 1.10 = 159.5.
+    assert.ok(Math.abs(result.terminal.p50 - 159.5) < 1e-9);
+  });
+
+  it("converts nominal returns to real returns", () => {
+    const plan = basePlan({
+      currentAge: 40,
+      fireAge: 41,
+      endAge: 41,
+      currentAssets: 100,
+      returnsAreNominal: true,
+      inflationPct: 10,
+      assets: [oneAsset({ expectedReturnPct: 10, volatilityPct: 0 })],
+    });
+
+    const result = simulate(plan);
+    assert.ok(Math.abs(result.terminal.p50 - 100) < 1e-9);
+    assert.ok(Math.abs(result.portfolio.accum.mu) < 1e-12);
+  });
+
+  it("offsets spending with pension and grosses up taxable sales", () => {
+    const plan = basePlan({
+      currentAge: 60,
+      fireAge: 60,
+      endAge: 61,
+      currentAssets: 1_000,
+      annualSpend: 100,
+      pensionAge: 60,
+      annualPension: 40,
+      taxRatePct: 25,
+      assets: [oneAsset({ expectedReturnPct: 0, volatilityPct: 0 })],
+    });
+
+    const result = simulate(plan);
+    assert.ok(Math.abs(result.terminal.p50 - 920) < 1e-9);
+    assert.ok(Math.abs((result.medianStory?.cumulativeWithdrawal ?? 0) - 80) < 1e-9);
+    assert.ok(Math.abs((result.medianStory?.cumulativeTax ?? 0) - 20) < 1e-9);
+  });
+
+  it("uses separate accumulation and withdrawal allocations", () => {
+    const fast = oneAsset({
+      id: "fast",
+      expectedReturnPct: 10,
+      accumWeight: 100,
+      withdrawWeight: 0,
+    });
+    const flat = oneAsset({
+      id: "flat",
+      expectedReturnPct: 0,
+      accumWeight: 0,
+      withdrawWeight: 100,
+    });
+    const plan = basePlan({
+      currentAge: 40,
+      fireAge: 41,
+      endAge: 42,
+      currentAssets: 100,
+      assets: [fast, flat],
+      correlations: [
+        [1, 0],
+        [0, 1],
+      ],
+    });
+
+    const result = simulate(plan);
+    assert.ok(Math.abs(result.terminal.p50 - 110) < 1e-9);
+    assert.ok(Math.abs(result.portfolio.accum.mu - 0.1) < 1e-12);
+    assert.ok(Math.abs(result.portfolio.withdraw.mu) < 1e-12);
+  });
+
+  it("combines multiple ruin rules with logical OR", () => {
+    const plan = basePlan({
+      currentAge: 60,
+      fireAge: 60,
+      endAge: 61,
+      currentAssets: 100,
+      annualSpend: 60,
+      assets: [oneAsset({ expectedReturnPct: 0, volatilityPct: 0 })],
+      ruinRules: [
+        { id: "checkpoint", type: "below_at_age", age: 61, amount: 10 },
+        { id: "buffer", type: "years_of_spend", years: 2 },
+      ],
+    });
+
+    const result = simulate(plan);
+    assert.equal(result.ruinCount, 200);
+    assert.equal(result.successRate, 0);
   });
 
   it("treats checkpoint ruin at a given age", () => {

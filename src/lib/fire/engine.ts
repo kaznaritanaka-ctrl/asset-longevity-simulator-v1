@@ -77,13 +77,13 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
   }
 
   const inflation = plan.inflationPct / 100;
+  const nA = plan.assets.length;
   const mu = plan.assets.map((a) =>
     realReturn(a.expectedReturnPct / 100, inflation, plan.returnsAreNominal),
   );
   const sigma = plan.assets.map((a) => Math.max(0, a.volatilityPct / 100));
-  const corr = makePositiveDefinite(plan.correlations);
+  const corr = makePositiveDefinite(plan.correlations, nA);
   const L = cholesky(corr);
-  const nA = plan.assets.length;
   const wAcc = normalizeWeights(plan.assets.map((a) => a.accumWeight));
   const wWd = normalizeWeights(plan.assets.map((a) => a.withdrawWeight));
 
@@ -315,7 +315,9 @@ function pickRuinStory(args: {
       }
     }
   }
-  const pickRng = mulberry32((args.seed ^ (Math.imul(args.storyNonce + 1, 0x9e3779b9) >>> 0)) >>> 0);
+  const pickRng = mulberry32(
+    (args.seed ^ (Math.imul(args.storyNonce + 1, 0x9e3779b9) >>> 0)) >>> 0,
+  );
   const chosen =
     ruinedIdx.length > 0 ? ruinedIdx[Math.floor(pickRng() * ruinedIdx.length)]! : worst;
 

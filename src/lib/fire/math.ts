@@ -23,37 +23,49 @@ export function cholesky(matrix: number[][]): number[][] {
   for (let i = 0; i < n; i++) {
     for (let j = 0; j <= i; j++) {
       let sum = 0;
-      for (let k = 0; k < j; k++) sum += L[i][k] * L[j][k];
+      for (let k = 0; k < j; k++) sum += L[i]![k]! * L[j]![k]!;
       if (i === j) {
-        L[i][j] = Math.sqrt(Math.max(matrix[i][i] - sum, 1e-12));
+        const diagonal = (matrix[i]?.[i] ?? Number.NaN) - sum;
+        if (!Number.isFinite(diagonal) || diagonal <= 1e-12) {
+          throw new Error("Matrix is not positive definite");
+        }
+        L[i]![j] = Math.sqrt(diagonal);
       } else {
-        const denom = L[j][j] || 1e-12;
-        L[i][j] = (matrix[i][j] - sum) / denom;
+        const value = matrix[i]?.[j];
+        const denom = L[j]![j]!;
+        if (!Number.isFinite(value) || !Number.isFinite(denom) || denom <= 0) {
+          throw new Error("Matrix is not positive definite");
+        }
+        L[i]![j] = (value - sum) / denom;
       }
     }
   }
   return L;
 }
 
-/** Ridge the diagonal until Cholesky is numerically stable. */
-export function makePositiveDefinite(corr: number[][]): number[][] {
-  const n = corr.length;
-  const A = corr.map((row, i) =>
-    row.map((v, j) => {
+/** Symmetrize, resize and shrink correlations toward identity until Cholesky succeeds. */
+export function makePositiveDefinite(corr: number[][], size = corr.length): number[][] {
+  const n = Math.max(0, Math.round(size));
+  const A = Array.from({ length: n }, (_, i) =>
+    Array.from({ length: n }, (__, j) => {
       if (i === j) return 1;
-      const x = Number.isFinite(v) ? v : 0;
-      return Math.max(-0.99, Math.min(0.99, x));
+      const left = corr[i]?.[j];
+      const right = corr[j]?.[i];
+      const values = [left, right].filter((v): v is number => Number.isFinite(v));
+      const value = values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : 0;
+      return Math.max(-0.99, Math.min(0.99, value));
     }),
   );
-  for (let ridge = 0; ridge <= 8; ridge++) {
-    const eps = ridge === 0 ? 0 : 1e-4 * Math.pow(4, ridge - 1);
-    const M = A.map((row, i) => row.map((v, j) => (i === j ? 1 + eps : v)));
+
+  for (let attempt = 0; attempt <= 16; attempt++) {
+    const ridge = attempt === 0 ? 0 : 1e-8 * Math.pow(4, attempt - 1);
+    const scale = 1 / (1 + ridge);
+    const M = A.map((row, i) => row.map((value, j) => (i === j ? 1 : value * scale)));
     try {
-      const L = cholesky(M);
-      const ok = L.every((row, i) => Number.isFinite(row[i]) && row[i] > 0);
-      if (ok) return M;
+      cholesky(M);
+      return M;
     } catch {
-      /* retry */
+      /* shrink off-diagonal correlations and retry */
     }
   }
   return Array.from({ length: n }, (_, i) =>
@@ -97,11 +109,7 @@ export function portfolioMoments(
   return { mu: mean, sigma: Math.sqrt(Math.max(varSum, 0)) };
 }
 
-export function resizeCorrelations(
-  current: number[][],
-  nextLen: number,
-  fill = 0.2,
-): number[][] {
+export function resizeCorrelations(current: number[][], nextLen: number, fill = 0.2): number[][] {
   const n = Math.max(0, nextLen);
   const out: number[][] = Array.from({ length: n }, (_, i) =>
     Array.from({ length: n }, (_, j) => (i === j ? 1 : fill)),
