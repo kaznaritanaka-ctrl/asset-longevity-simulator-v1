@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { formatAge, formatManYen, formatPct } from "@/lib/fire/format";
+import { formatAge, formatInt, formatManYen, formatPct } from "@/lib/fire/format";
 import type { RuinStory } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
 import { usePlanStore } from "@/store/plan-store";
@@ -176,6 +177,7 @@ function Spark({
   isMedian: boolean;
   fill?: boolean;
 }) {
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const vals = story.years.map((y) => y.wealth);
   const n = vals.length;
   if (n < 2) return null;
@@ -189,16 +191,67 @@ function Spark({
   const fireI = story.years.findIndex((yr) => yr.age >= fireAge);
   const ruinI = story.years.findIndex((yr) => yr.age >= story.ruinAge);
   const stroke = isMedian ? "var(--color-median)" : "var(--color-ruin)";
+  const startWealth = vals[0] ?? 0;
+  const startLineY = y(startWealth);
+  const activeYear = activeIndex == null ? null : story.years[activeIndex];
+  const activeX = activeIndex == null ? 0 : x(activeIndex);
+  const activeY = activeYear ? y(activeYear.wealth) : 0;
+  const activeXPercent = (activeX / w) * 100;
+  const activeYPercent = (activeY / h) * 100;
+  const timingLabel = activeYear
+    ? activeYear.age < fireAge
+      ? `FIREまで${formatInt(fireAge - activeYear.age)}年`
+      : activeYear.age === fireAge
+        ? "FIRE開始年"
+        : `FIRE後${formatInt(activeYear.age - fireAge)}年`
+    : "";
+  const pointLabel = activeYear
+    ? `${formatAge(activeYear.age)}（${timingLabel}）、資産額${formatManYen(activeYear.wealth)}`
+    : "";
+
+  const selectNearestYear = (clientX: number, element: SVGSVGElement) => {
+    const rect = element.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    setActiveIndex(Math.round(ratio * (n - 1)));
+  };
 
   return (
-    <div className={cn("min-h-0 w-full", fill ? "mt-2 flex-1" : "mt-4 h-16")}>
+    <div className={cn("relative min-h-0 w-full", fill ? "mt-2 flex-1" : "mt-4 h-16")}>
       <svg
         viewBox={`0 0 ${w} ${h}`}
         preserveAspectRatio={fill ? "none" : "xMidYMid meet"}
-        className="h-full w-full overflow-visible"
+        className="h-full w-full cursor-crosshair touch-pan-y overflow-visible rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         role="img"
-        aria-label="このシナリオの資産の推移"
+        tabIndex={0}
+        aria-label="このシナリオの資産の推移。マウスを動かすか、左右の矢印キーで年齢ごとの資産額を確認できます。"
+        onPointerMove={(event) => {
+          if (event.pointerType !== "touch") selectNearestYear(event.clientX, event.currentTarget);
+        }}
+        onPointerDown={(event) => {
+          event.currentTarget.focus();
+          selectNearestYear(event.clientX, event.currentTarget);
+        }}
+        onPointerLeave={(event) => {
+          if (event.pointerType !== "touch") setActiveIndex(null);
+        }}
+        onFocus={() => setActiveIndex((current) => current ?? 0)}
+        onBlur={() => setActiveIndex(null)}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+          event.preventDefault();
+          const direction = event.key === "ArrowRight" ? 1 : -1;
+          setActiveIndex((current) => Math.max(0, Math.min(n - 1, (current ?? 0) + direction)));
+        }}
       >
+        <line
+          x1={0}
+          x2={w}
+          y1={startLineY}
+          y2={startLineY}
+          stroke="var(--color-border-strong)"
+          strokeDasharray="2 4"
+          strokeWidth="1"
+        />
         {fireI >= 0 ? (
           <line
             x1={x(fireI)}
@@ -214,7 +267,52 @@ function Spark({
         {!isMedian && story.ruined && ruinI >= 0 ? (
           <circle cx={x(ruinI)} cy={y(vals[ruinI] ?? 0)} r="5" fill="var(--color-ruin)" />
         ) : null}
+        {activeYear ? (
+          <>
+            <line
+              x1={activeX}
+              x2={activeX}
+              y1={0}
+              y2={h}
+              stroke="var(--color-fg-subtle)"
+              strokeDasharray="2 3"
+              strokeWidth="1"
+            />
+            <circle
+              cx={activeX}
+              cy={activeY}
+              r="5"
+              fill="var(--color-surface)"
+              stroke={stroke}
+              strokeWidth="2"
+            />
+          </>
+        ) : null}
       </svg>
+
+      {activeYear ? (
+        <div
+          className={cn(
+            "pointer-events-none absolute z-10 w-max max-w-48 rounded-lg bg-fg px-2.5 py-2 text-xs leading-snug text-surface shadow-lg",
+            activeXPercent > 72
+              ? "-translate-x-full"
+              : activeXPercent >= 28
+                ? "-translate-x-1/2"
+                : "",
+            activeYPercent < 40 ? "mt-2" : "-mt-2 -translate-y-full",
+          )}
+          style={{ left: `${activeXPercent}%`, top: `${activeYPercent}%` }}
+          aria-hidden="true"
+        >
+          <span className="block font-medium">
+            {formatAge(activeYear.age)}（{timingLabel}）
+          </span>
+          <span className="mt-0.5 block tabular-nums">資産額 {formatManYen(activeYear.wealth)}</span>
+        </div>
+      ) : null}
+      <output className="sr-only" aria-live="polite">
+        {pointLabel}
+      </output>
     </div>
   );
 }
