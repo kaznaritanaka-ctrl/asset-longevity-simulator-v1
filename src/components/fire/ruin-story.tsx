@@ -10,6 +10,11 @@ function signedPct(decimal: number | null, digits = 1): string {
   return `${decimal < 0 ? "−" : "+"}${body}`;
 }
 
+function balanceDrawdownPct(decimal: number, excludesDepletionYear: boolean): string {
+  if (excludesDepletionYear && decimal > -1 && decimal <= -0.9995) return "−99.9%超";
+  return formatPct(decimal, excludesDepletionYear ? 1 : 0);
+}
+
 export function RuinStoryCard({
   story,
   fireAge,
@@ -35,6 +40,7 @@ export function RuinStoryCard({
 
   const isMedian = story.role === "median";
   const canDrawAnother = !isMedian && story.ruinCount > 1;
+  const excludedDepletionYear = !isMedian && story.ruined && story.terminal <= 0;
 
   const headline = isMedian
     ? `${formatAge(story.years.at(-1)?.age ?? story.ruinAge)}で${formatManYen(story.terminal)}`
@@ -93,8 +99,8 @@ export function RuinStoryCard({
         )}
         <Metric label={isMedian ? "期間" : "枯渇まで"} value={`${story.yearsToRuin}年`} compact={compact} />
         <Metric
-          label="最大DD"
-          value={formatPct(story.maxDrawdown, 0)}
+          label={excludedDepletionYear ? (compact ? "枯渇前年DD" : "枯渇年を除く残高最大減少") : compact ? "最大DD" : "入出金込みの残高最大減少"}
+          value={balanceDrawdownPct(story.maxDrawdown, excludedDepletionYear)}
           warn={story.maxDrawdown <= -0.3}
           compact={compact}
         />
