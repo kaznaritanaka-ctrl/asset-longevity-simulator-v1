@@ -1,4 +1,4 @@
-import type { Plan, RuinPeriod, RuinRule, SamplePath, SimResult } from "./types";
+import type { FailurePeriod, Plan, RuinPeriod, RuinRule, SamplePath, SimResult } from "./types";
 import {
   cholesky,
   gaussian,
@@ -50,6 +50,7 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
       years: 0,
       ages,
       ruinCount: 0,
+      periodFailureCounts: { throughAge80: 0, age81To100: 0, afterAge100: 0 },
       successRate: 1,
       failureMode,
       percentiles: {
@@ -211,11 +212,18 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
   const terminalCol = col; // last sort is terminal year
   const survivors: number[] = [];
   let ruinCount = 0;
+  const periodFailureCounts: Record<FailurePeriod, number> = {
+    throughAge80: 0,
+    age81To100: 0,
+    afterAge100: 0,
+  };
   const ruinedAges: number[] = [];
   for (let i = 0; i < trials; i++) {
     if (ruined[i]) {
       ruinCount++;
-      ruinedAges.push(ruinAge[i]!);
+      const failedAt = ruinAge[i]!;
+      ruinedAges.push(failedAt);
+      periodFailureCounts[failurePeriodForAge(failedAt)]++;
     } else {
       survivors.push(wealth[i * T + (T - 1)]!);
     }
@@ -277,6 +285,7 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
     years,
     ages,
     ruinCount,
+    periodFailureCounts,
     successRate: 1 - ruinCount / trials,
     failureMode,
     percentiles: { p5, p10, p25, p50, p75, p90, p95 },
@@ -370,13 +379,14 @@ function pickRuinStory(
   });
 }
 
-function isRuinAgeInPeriod(
-  age: number,
-  period: Exclude<RuinPeriod, "survived">,
-): boolean {
-  if (period === "throughAge80") return age <= 80;
-  if (period === "age81To100") return age > 80 && age <= 100;
-  return age > 100;
+function isRuinAgeInPeriod(age: number, period: Exclude<RuinPeriod, "survived">): boolean {
+  return failurePeriodForAge(age) === period;
+}
+
+function failurePeriodForAge(age: number): FailurePeriod {
+  if (age <= 80) return "throughAge80";
+  if (age <= 100) return "age81To100";
+  return "afterAge100";
 }
 
 function pickMedianStory(args: {

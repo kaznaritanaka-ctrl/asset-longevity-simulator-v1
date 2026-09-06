@@ -99,6 +99,7 @@ export function ResultsPanel() {
       <Quad
         title="資産寿命と生命寿命の比較"
         action={
+
           <SegmentedControl
             ariaLabel="性別"
             className="w-[7.5rem]"
