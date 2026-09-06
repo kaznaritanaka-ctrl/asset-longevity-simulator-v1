@@ -77,6 +77,8 @@ describe("simulate", () => {
     assert.equal(result.ruinCount, 200);
     assert.equal(result.successRate, 0);
     assert.ok(result.medianRuinAge !== null);
+    assert.equal(result.ruinStory?.marketMaxDrawdown, 0);
+    assert.equal(result.ruinStory?.maxDrawdown, -1);
   });
 
   it("provides a representative story for each populated ruin-age period", () => {
@@ -115,6 +117,27 @@ describe("simulate", () => {
     });
     const result = simulate(plan);
     assert.ok(Math.abs(result.terminal.p50 - 200) < 1e-6);
+  });
+
+  it("keeps cashflow growth separate from investment drawdown", () => {
+    const plan = basePlan({
+      currentAge: 40,
+      fireAge: 42,
+      endAge: 42,
+      currentAssets: 100,
+      annualContribution: 100,
+      assets: [oneAsset({ expectedReturnPct: -20, volatilityPct: 0 })],
+    });
+    const result = simulate(plan);
+
+    assert.equal(result.medianStory?.maxDrawdown, 0);
+    assert.ok(Math.abs((result.medianStory?.marketMaxDrawdown ?? 0) - -0.36) < 1e-12);
+  });
+
+  it("runs without failure rules and treats every path as achieved", () => {
+    const result = simulate(basePlan({ ruinRules: [] }));
+    assert.equal(result.ruinCount, 0);
+    assert.equal(result.successRate, 1);
   });
 
   it("applies beginning-of-year cashflow and switches phase at FIRE age", () => {

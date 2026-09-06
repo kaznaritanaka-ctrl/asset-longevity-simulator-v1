@@ -111,6 +111,11 @@ export function RuinStoryCard({
         {compact ? null : (
           <>
             <Metric
+              label="運用だけの最大下落"
+              value={formatPct(story.marketMaxDrawdown, 0)}
+              warn={story.marketMaxDrawdown <= -0.3}
+            />
+            <Metric
               label="FIRE後10年の実質CAGR"
               value={signedPct(story.fire10yCagr)}
               warn={(story.fire10yCagr ?? 0) < 0}

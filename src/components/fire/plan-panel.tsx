@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Field, SectionCard } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { usePlanStore } from "@/store/plan-store";
@@ -6,9 +7,25 @@ import { AgeSlider } from "./age-slider";
 export function PlanPanel() {
   const plan = usePlanStore((s) => s.plan);
   const patchPlan = usePlanStore((s) => s.patchPlan);
+  const fromShare = usePlanStore((s) => s.fromShare);
+  const saveSharedPlan = usePlanStore((s) => s.saveSharedPlan);
+  const restorePreviousPlan = usePlanStore((s) => s.restorePreviousPlan);
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
+      {fromShare ? (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-surface px-3 py-2.5 text-xs leading-relaxed text-fg-muted shadow-[var(--shadow-border)]">
+          <p>共有リンクの条件を一時表示中。端末に保存した条件はまだ変えていない。</p>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={restorePreviousPlan}>
+              元の条件に戻す
+            </Button>
+            <Button type="button" size="sm" onClick={saveSharedPlan}>
+              この条件を保存
+            </Button>
+          </div>
+        </div>
+      ) : null}
       <SectionCard title="条件設定">
         <div>
           <AgeSlider compact />

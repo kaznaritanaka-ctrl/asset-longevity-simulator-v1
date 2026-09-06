@@ -55,6 +55,14 @@ export function buildRuinStory(args: {
   const fire10yCagr = fireSlice.length >= 3 ? geomMean(fireSlice) : null;
 
   const retToHorizon = returns.slice(0, horizonIdx);
+  let marketIndex = 1;
+  let marketPeak = 1;
+  let marketMaxDrawdown = 0;
+  for (const annualReturn of retToHorizon) {
+    marketIndex *= Math.max(0, 1 + annualReturn);
+    if (marketIndex > marketPeak) marketPeak = marketIndex;
+    if (marketPeak > 0) marketMaxDrawdown = Math.min(marketMaxDrawdown, marketIndex / marketPeak - 1);
+  }
   let worstYear = 0;
   let worstAge: number | null = null;
   if (retToHorizon.length) {
@@ -84,6 +92,7 @@ export function buildRuinStory(args: {
     yearsToRuin,
     fire10yCagr,
     maxDrawdown,
+    marketMaxDrawdown,
     worstYear,
     worstAge,
     preRuin5yAvg,
@@ -102,6 +111,7 @@ export function buildRuinStory(args: {
     ruinAge,
     yearsToRuin,
     maxDrawdown,
+    marketMaxDrawdown,
     fire10yCagr,
     worstYear,
     worstAge,
@@ -134,6 +144,7 @@ function narrate(s: {
   yearsToRuin: number;
   fire10yCagr: number | null;
   maxDrawdown: number;
+  marketMaxDrawdown: number;
   worstYear: number;
   worstAge: number | null;
   preRuin5yAvg: number | null;

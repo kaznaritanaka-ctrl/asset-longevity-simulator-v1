@@ -2,7 +2,14 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createDefaultPlan, PRESETS } from "./defaults.ts";
 import { assetsFromWindow, windowById } from "./sourced-params.ts";
-import { compactPlan, decodePlan, encodePlan, expandPlan } from "./share.ts";
+import {
+  buildPublicUrl,
+  buildShareUrl,
+  compactPlan,
+  decodePlan,
+  encodePlan,
+  expandPlan,
+} from "./share.ts";
 import type { Plan } from "./types.ts";
 
 function comparable(plan: Plan) {
@@ -60,5 +67,17 @@ describe("share codec", () => {
     const decoded = decodePlan(old);
     assert.ok(decoded);
     assert.equal(decoded.currentAge, 40);
+  });
+
+  it("puts financial conditions in a URL fragment and strips them from public URLs", () => {
+    const plan = createDefaultPlan();
+    const shared = new URL(buildShareUrl(plan, "https://example.com/app?utm=x&p=legacy"));
+    assert.equal(shared.searchParams.get("p"), null);
+    assert.ok(shared.hash.startsWith("#p=c1."));
+
+    const publicUrl = new URL(buildPublicUrl(shared.toString()));
+    assert.equal(publicUrl.hash, "");
+    assert.equal(publicUrl.searchParams.get("p"), null);
+    assert.equal(publicUrl.searchParams.get("utm"), "x");
   });
 });

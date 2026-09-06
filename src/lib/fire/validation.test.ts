@@ -26,6 +26,12 @@ describe("plan validation", () => {
     assert.ok(fields.includes("assets.withdrawWeight"));
   });
 
+  it("allows simulation without a failure condition", () => {
+    const plan = createDefaultPlan();
+    plan.ruinRules = [];
+    assert.deepEqual(validatePlan(plan), []);
+  });
+
   it("repairs a missing external correlation dimension", () => {
     const source = createDefaultPlan();
     source.assets = source.assets.slice(0, 3);

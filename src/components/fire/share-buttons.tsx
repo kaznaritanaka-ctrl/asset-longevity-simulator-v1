@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { buildShareUrl, buildTweetText, tweetIntentUrl } from "@/lib/fire/share";
+import {
+  buildPublicUrl,
+  buildShareUrl,
+  buildTweetText,
+  tweetIntentUrl,
+} from "@/lib/fire/share";
 import { usePlanStore } from "@/store/plan-store";
 
 export function ShareButtons() {
@@ -22,7 +27,7 @@ export function ShareButtons() {
   };
 
   const shareX = () => {
-    const url = buildShareUrl(plan);
+    const url = buildPublicUrl();
     const intent = tweetIntentUrl(buildTweetText(plan, result, url));
     window.open(intent, "_blank", "noopener,noreferrer");
   };
@@ -35,8 +40,9 @@ export function ShareButtons() {
         size="sm"
         className="h-8 px-2.5 text-xs"
         onClick={copyLink}
+        title="現在の金融条件を含むリンクをクリップボードへコピーします"
       >
-        {copied ? "コピーした" : "リンク"}
+        {copied ? "コピーした" : "条件リンク"}
       </Button>
       <Button
         type="button"
@@ -45,7 +51,11 @@ export function ShareButtons() {
         className="h-8 px-2.5 text-xs"
         onClick={shareX}
         disabled={resultStale || error != null}
-        title={resultStale || error ? "新しい計算結果が出てから共有できます" : undefined}
+        title={
+          resultStale || error
+            ? "新しい計算結果が出てから共有できます"
+            : "Xには金融条件を含まない公開ページURLだけを共有します"
+        }
       >
         X
       </Button>

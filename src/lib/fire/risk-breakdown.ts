@@ -1,4 +1,4 @@
-import type { SimResult } from "./types";
+import type { RuinRule, SimResult } from "./types";
 
 export type RuinRiskBreakdown = {
   throughAge80: number;
@@ -10,6 +10,25 @@ export type RuinRiskBreakdown = {
 function clampProbability(value: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.min(1, value));
+}
+
+export function isAssetDepletionOnly(rules: RuinRule[]): boolean {
+  return (
+    rules.length > 0 &&
+    rules.every((rule) => rule.type === "depleted" && rule.threshold === 0)
+  );
+}
+
+export function wilsonInterval(successes: number, trials: number, z = 1.96): [number, number] {
+  if (!Number.isFinite(trials) || trials <= 0) return [0, 1];
+  const n = Math.max(1, Math.round(trials));
+  const p = Math.max(0, Math.min(n, successes)) / n;
+  const z2 = z * z;
+  const denominator = 1 + z2 / n;
+  const center = (p + z2 / (2 * n)) / denominator;
+  const margin =
+    (z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n))) / denominator;
+  return [Math.max(0, center - margin), Math.min(1, center + margin)];
 }
 
 function survivalAt(result: Pick<SimResult, "ages" | "survival">, age: number): number {

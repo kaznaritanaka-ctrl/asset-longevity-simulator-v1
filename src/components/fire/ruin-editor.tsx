@@ -40,8 +40,8 @@ export function RuinEditor({
         どれか一つに該当した経路を資産枯渇とみなす（論理和）。初期値は「期間中に資産が0円以下」。100歳時点の残額で判定したい場合はチェックポイントを足す。
       </p>
       {plan.ruinRules.length === 0 ? (
-        <p className="rounded-md bg-ruin-soft px-3 py-2 text-sm text-ruin">
-          条件が空です。このままだとすべての経路が生存になります。
+        <p className="rounded-md bg-bg-sunken px-3 py-2 text-sm text-fg-muted">
+          判定条件はありません。計算はできますが、すべての経路が計画達成扱いになります。
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
