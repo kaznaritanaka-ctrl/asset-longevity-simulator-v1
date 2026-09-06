@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/ui/segmented";
 import { formatAge, formatInt, formatManYen, formatPct } from "@/lib/fire/format";
 import type { RuinStory } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
 import { usePlanStore } from "@/store/plan-store";
 import { useState } from "react";
+import type { ChartScale } from "./fan-chart";
+import { createStoryYScale } from "./ruin-story-scale";
 
 function signedPct(decimal: number | null, digits = 1): string {
   if (decimal == null || !Number.isFinite(decimal)) return "—";
@@ -30,6 +33,7 @@ export function RuinStoryCard({
   failureLabel?: string;
 }) {
   const drawAnotherStory = usePlanStore((s) => s.drawAnotherStory);
+  const [scale, setScale] = useState<ChartScale>("log");
 
   if (!story) return null;
 
@@ -47,13 +51,23 @@ export function RuinStoryCard({
       className={cn(
         "min-w-0 max-w-full",
         embedded
-          ? "mt-5 border-t border-border pt-4"
+          ? "mt-4 border-t border-border pt-3"
           : "rounded-xl p-3.5 shadow-[var(--shadow-border)] sm:p-5 md:p-6",
         !embedded && (isMedian ? "bg-surface" : story.ruined ? "bg-ruin-soft" : "bg-surface"),
       )}
     >
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="font-display text-base text-fg sm:text-lg">{heading}</h3>
+        <SegmentedControl
+          ariaLabel="代表シナリオの縦軸スケール"
+          className="w-36"
+          value={scale}
+          onChange={setScale}
+          options={[
+            { id: "log", label: "片対数" },
+            { id: "linear", label: "線形" },
+          ]}
+        />
       </header>
 
       <div className="mt-3 flex flex-wrap items-end justify-between gap-2">
@@ -75,7 +89,7 @@ export function RuinStoryCard({
 
       <p className="mt-3 max-w-3xl text-sm leading-relaxed text-fg">{story.narrative}</p>
 
-      <Spark story={story} fireAge={fireAge} isMedian={isMedian} />
+      <Spark story={story} fireAge={fireAge} isMedian={isMedian} scale={scale} />
 
       <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-3 sm:grid-cols-4 sm:gap-x-4">
         {isMedian ? (
@@ -131,7 +145,7 @@ export function RuinStoryCard({
         />
       </dl>
 
-      <p className="mt-4 rounded-lg bg-bg-sunken px-3 py-2.5 text-xs leading-relaxed text-fg-muted">
+      <p className="mt-4 rounded-lg bg-bg-sunken px-3 py-2.5 text-xs leading-relaxed text-fg-muted sm:text-sm">
         {isMedian
           ? "この線は、各年齢の中央値の帯に最も近い実在経路1本です。分位帯全体そのものではありません。"
           : `この1本は、同じ年齢帯で${failureLabel}した${formatInt(story.ruinCount)}経路から抽出した例です。平均や中央的な経路ではないため、頻度は上の割合と件数で確認してください。`}
@@ -143,7 +157,7 @@ export function RuinStoryCard({
 function Metric({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
   return (
     <div className="min-w-0">
-      <dt className="text-[11px] leading-snug break-words text-fg-subtle">{label}</dt>
+      <dt className="text-xs leading-snug break-words text-fg-subtle">{label}</dt>
       <dd
         className={cn(
           "mt-0.5 font-display text-base tabular-nums tracking-tight sm:text-lg",
@@ -160,21 +174,22 @@ function Spark({
   story,
   fireAge,
   isMedian,
+  scale,
 }: {
   story: RuinStory;
   fireAge: number;
   isMedian: boolean;
+  scale: ChartScale;
 }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const vals = story.years.map((y) => y.wealth);
   const n = vals.length;
   if (n < 2) return null;
-  const max = Math.max(...vals, 1);
   const w = 640;
   const h = 72;
   const pad = 2;
   const x = (i: number) => (i / (n - 1)) * w;
-  const y = (v: number) => pad + (1 - v / max) * (h - pad * 2);
+  const y = createStoryYScale(vals, scale, h, pad);
   const d = vals
     .map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`)
     .join(" ");
@@ -209,7 +224,7 @@ function Spark({
     <div className="mt-4 grid grid-cols-[5.5rem_minmax(0,1fr)] items-stretch gap-2 sm:grid-cols-[6.5rem_minmax(0,1fr)]">
       <div className="relative h-20" aria-hidden="true">
         <div
-          className="absolute right-0 -translate-y-1/2 text-right text-[11px] leading-tight text-fg-subtle"
+          className="absolute right-0 -translate-y-1/2 text-right text-xs leading-tight text-fg-subtle"
           style={{ top: `${(startLineY / h) * 100}%` }}
         >
           <span className="block">開始時資産</span>
@@ -225,7 +240,7 @@ function Spark({
           className="h-full w-full max-w-full cursor-crosshair touch-pan-y overflow-visible rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
           role="img"
           tabIndex={0}
-          aria-label="この経路の資産の推移。マウスを動かすか、左右の矢印キーで年齢ごとの資産額を確認できます。"
+          aria-label={`この経路の資産の推移（${scale === "log" ? "片対数" : "線形"}）。マウスを動かすか、左右の矢印キーで年齢ごとの資産額を確認できます。`}
           onPointerMove={(event) => {
             if (event.pointerType !== "touch")
               selectNearestYear(event.clientX, event.currentTarget);

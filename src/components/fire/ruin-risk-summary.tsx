@@ -62,7 +62,7 @@ export function RuinRiskSummary({
       label: `${Math.max(101, firstSimulatedAge)}〜${result.endAge}歳で${failureLabel}`,
       value: breakdown.afterAge100,
       count: breakdown.counts.afterAge100,
-      color: "bg-ruin/50",
+      color: "bg-ruin/75",
     });
   }
   segments.push({
@@ -97,7 +97,7 @@ export function RuinRiskSummary({
       </header>
 
       <div
-        className="mt-4 flex h-3 overflow-hidden rounded-full bg-bg-sunken"
+        className="mt-3 flex h-3.5 overflow-hidden rounded-full bg-bg-sunken saturate-125"
         role="img"
         aria-label={`${failureLabel}率 ${formatRiskRate(totalRuin, result.ruinCount)}。${segments
           .map(
@@ -118,7 +118,7 @@ export function RuinRiskSummary({
 
       <div
         className={cn(
-          "mt-4 grid grid-cols-2 gap-2",
+          "mt-3 grid grid-cols-2 gap-2",
           segments.length === 2
             ? "sm:grid-cols-2"
             : segments.length === 3
@@ -140,36 +140,36 @@ export function RuinRiskSummary({
                 : "border-border bg-surface-2 hover:bg-bg-sunken",
             )}
           >
-            <span className="flex items-center gap-1.5 text-[11px] leading-tight text-fg-subtle">
+            <span className="flex items-center gap-1.5 text-xs leading-tight text-fg-subtle">
               <i className={`inline-block size-2 shrink-0 rounded-full ${segment.color}`} />
               {segment.label}
             </span>
             <strong className="mt-1 block font-display text-lg font-normal tabular-nums text-fg">
               {formatRiskRate(segment.value, segment.count)}
             </strong>
-            <span className="mt-0.5 block text-[10px] tabular-nums text-fg-subtle">
+            <span className="mt-0.5 block text-[11px] tabular-nums text-fg-subtle">
               {segment.count.toLocaleString("ja-JP")} / {result.trials.toLocaleString("ja-JP")}経路
             </span>
           </button>
         ))}
       </div>
-      <p className="mt-2 text-[11px] leading-relaxed text-fg-subtle">
+      <p className="mt-2 text-xs leading-relaxed text-fg-subtle">
         年齢帯を選ぶと、その区分に該当する代表経路を表示する。各値は全試行に占める割合。
       </p>
 
       <section
-        className="mt-4 rounded-lg bg-bg-sunken px-3 py-3"
+        className="mt-3 rounded-lg bg-bg-sunken px-3 py-3"
         aria-label="途中経路のリスク。FIRE開始後、過去の最高資産残高からの減少を入出金込みで集計"
       >
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
           <h3 className="font-display text-sm text-fg">途中経路のリスク</h3>
-          <p className="text-[10px] leading-relaxed text-fg-subtle">
+          <p className="text-[11px] leading-relaxed text-fg-subtle sm:text-xs">
             FIRE開始後の最高残高からの減少（入出金込み）
           </p>
         </div>
         <dl className="mt-3 grid grid-cols-3 divide-x divide-border">
           <DrawdownMetric
-            label="最大DD 中央値"
+            label="最大ドローダウン中央値"
             value={formatDrawdown(result.balanceDrawdown.median)}
           />
           <DrawdownMetric
@@ -197,7 +197,7 @@ export function RuinRiskSummary({
 function DrawdownMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0 px-2 first:pl-0 last:pr-0">
-      <dt className="text-[10px] leading-tight text-fg-subtle">{label}</dt>
+      <dt className="text-[11px] leading-tight text-fg-subtle sm:text-xs">{label}</dt>
       <dd className="mt-1 font-display text-lg tabular-nums text-fg">{value}</dd>
     </div>
   );
