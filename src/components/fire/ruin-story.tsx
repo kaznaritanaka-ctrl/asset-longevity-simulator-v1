@@ -54,7 +54,7 @@ export function RuinStoryCard({
       )}
     >
       <header className="flex shrink-0 items-center justify-between gap-3">
-        <h3 className="font-display text-xl text-fg">{heading}</h3>
+        <h3 className="type-title text-fg">{heading}</h3>
         {canDrawAnother ? (
           <Button type="button" variant="secondary" size="sm" className="shrink-0 text-xs" onClick={drawAnotherStory}>
             別の資産枯渇シナリオを見る
@@ -62,7 +62,7 @@ export function RuinStoryCard({
         ) : null}
       </header>
 
-      <p className={cn("mt-1.5 shrink-0 font-display text-fg", compact ? "text-2xl" : "text-3xl")}>
+      <p className="type-metric mt-1.5 shrink-0 text-fg">
         {headline}
       </p>
       <p
@@ -141,11 +141,10 @@ function Metric({
 }) {
   return (
     <div className="min-w-0">
-      <dt className="text-xs leading-snug break-words text-fg-muted sm:text-sm">{label}</dt>
+      <dt className="type-caption leading-snug break-words text-fg-muted">{label}</dt>
       <dd
         className={cn(
-          "mt-0.5 font-display tabular-nums tracking-tight",
-          compact ? "text-base lg:text-lg" : "text-lg sm:text-xl",
+          "mt-0.5 font-display text-lg tabular-nums tracking-tight",
           warn ? "text-ruin" : "text-fg",
         )}
       >

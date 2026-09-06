@@ -18,13 +18,13 @@ export function KpiHero() {
     <section className="rise-in shrink-0 min-w-0 rounded-xl bg-surface px-4 py-3 shadow-[var(--shadow-border)] sm:px-5 lg:py-2.5">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         <div className="flex min-w-0 items-baseline gap-3">
-          <p className="text-xs font-medium tracking-[0.16em] text-fg-subtle uppercase">
+          <p className="type-caption font-medium tracking-[0.16em] text-fg-subtle uppercase">
             生存率
             {result ? (resultStale ? " · 前回" : "") : ""}
           </p>
           <p
             className={cn(
-              "font-display text-3xl leading-none tracking-tight tabular-nums lg:text-[2.35rem]",
+              "type-hero",
               tone === "survive" && "text-survive",
               tone === "mid" && "text-fg",
               tone === "ruin" && "text-ruin",
@@ -88,8 +88,8 @@ export function KpiHero() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs text-fg-subtle">{label}</dt>
-      <dd className="font-display text-base tabular-nums tracking-tight text-fg lg:text-lg">{value}</dd>
+      <dt className="type-caption text-fg-subtle">{label}</dt>
+      <dd className="type-metric text-fg">{value}</dd>
     </div>
   );
 }

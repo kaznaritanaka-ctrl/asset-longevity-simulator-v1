@@ -164,10 +164,8 @@ function CompareStat({
 }) {
   return (
     <div className={cn("min-w-0 rounded-lg bg-surface-2 shadow-[var(--shadow-border)]", compact ? "px-2 py-1.5" : "px-3 py-2.5")}>
-      <dt className="text-xs leading-snug text-fg-muted sm:text-sm">{label}</dt>
-      <dd className={cn("font-display tabular-nums tracking-tight text-fg", compact ? "text-xl lg:text-2xl" : "text-2xl")}>
-        {value}
-      </dd>
+      <dt className="type-caption text-fg-muted">{label}</dt>
+      <dd className="type-metric text-fg">{value}</dd>
       {compact ? null : <p className="mt-0.5 text-sm text-fg-muted">{sub}</p>}
       <div className={cn("overflow-hidden rounded-full bg-bg-sunken", compact ? "mt-1 h-1" : "mt-2 h-1.5")}>
         <div

@@ -226,7 +226,7 @@ export function AssetClassList() {
 function MiniField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="grid gap-1">
-      <span className="text-[10px] font-medium tracking-wide text-fg-subtle">{label}</span>
+      <span className="type-caption font-medium tracking-wide text-fg-subtle">{label}</span>
       {children}
     </label>
   );

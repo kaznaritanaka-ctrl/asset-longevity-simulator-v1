@@ -30,7 +30,7 @@ export function AppHeader() {
               strokeWidth="1.4"
             />
           </svg>
-          <p className="font-display text-lg leading-none tracking-tight text-fg">
+          <p className="type-title leading-none text-fg">
             資産寿命シミュレータ
           </p>
         </div>

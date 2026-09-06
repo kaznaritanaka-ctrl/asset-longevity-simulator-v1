@@ -64,13 +64,13 @@ export function RuinRiskSummary({
     <div className="flex min-h-0 flex-1 flex-col">
       <header className="flex shrink-0 items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-display text-xl leading-snug text-fg">
+          <p className="type-title text-fg">
             {result.endAge}歳まで資産が持つ割合
             {resultStale ? " · 前回" : ""}
           </p>
           <p
             className={cn(
-              "mt-1 font-display text-5xl leading-none tracking-tight tabular-nums lg:text-6xl",
+              "type-hero mt-1",
               tone === "survive" && "text-survive",
               tone === "mid" && "text-fg",
               tone === "ruin" && "text-ruin",
@@ -140,7 +140,7 @@ export function RuinRiskSummary({
               <i className={`inline-block size-1.5 shrink-0 rounded-full ${segment.color}`} />
               <span className="truncate">{segment.label}</span>
             </span>
-            <strong className="mt-0.5 block font-display text-base font-normal tabular-nums text-fg">
+            <strong className="type-body mt-0.5 block font-medium tabular-nums text-fg">
               {formatPct(segment.value, 1)}
             </strong>
           </button>
@@ -153,8 +153,8 @@ export function RuinRiskSummary({
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <dt className="text-sm leading-snug text-fg-muted">{label}</dt>
-      <dd className="font-display text-2xl tabular-nums tracking-tight text-fg lg:text-3xl">{value}</dd>
+      <dt className="type-caption text-fg-muted">{label}</dt>
+      <dd className="type-metric text-fg">{value}</dd>
     </div>
   );
 }

@@ -1,9 +1,9 @@
 import { i as __toESM } from "../_runtime.mjs";
 import { n as require_react } from "../_libs/@radix-ui/react-compose-refs+[...].mjs";
 import { I as require_jsx_runtime } from "../_libs/@tanstack/react-router+[...].mjs";
-import { _ as formatManYen, a as buildTweetText, g as formatAxisYen, h as formatAge, i as buildShareUrl, n as Button, o as tweetIntentUrl, r as usePlanStore, v as formatPct, y as cn } from "./routes-BPd-Igsl.mjs";
+import { _ as formatManYen, a as buildTweetText, g as formatAxisYen, h as formatAge, i as buildShareUrl, n as Button, o as tweetIntentUrl, r as usePlanStore, v as formatPct, y as cn } from "./routes-BbTeEfmE.mjs";
 import { a as Area, c as ReferenceArea, d as Tooltip, i as XAxis, l as ReferenceLine, n as LineChart, o as Line, r as YAxis, s as CartesianGrid, t as ComposedChart, u as ResponsiveContainer } from "../_libs/recharts+[...].mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/results-panel-D0g-uffI.js
+//#region node_modules/.nitro/vite/services/ssr/assets/results-panel-DL552BgE.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function SegmentedControl({ value, onChange, options, ariaLabel, className }) {
@@ -11,7 +11,7 @@ function SegmentedControl({ value, onChange, options, ariaLabel, className }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		role: "tablist",
 		"aria-label": ariaLabel,
-		className: cn("relative grid h-9 w-[11.5rem] shrink-0 grid-cols-2 rounded-full bg-bg-sunken p-0.5 text-xs font-medium", className),
+		className: cn("relative grid h-9 w-[11.5rem] shrink-0 grid-cols-2 rounded-full bg-bg-sunken p-0.5 type-caption font-medium", className),
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 			"aria-hidden": true,
 			className: "pointer-events-none absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-full bg-surface shadow-[var(--shadow-border)] transition-[left] duration-200 ease-out",
@@ -855,14 +855,14 @@ function RuinRiskSummary({ result, selected, onSelect }) {
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 					className: "min-w-0",
 					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-						className: "font-display text-xl leading-snug text-fg",
+						className: "type-title text-fg",
 						children: [
 							result.endAge,
 							"歳まで資産が持つ割合",
 							resultStale ? " · 前回" : ""
 						]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-						className: cn("mt-1 font-display text-5xl leading-none tracking-tight tabular-nums lg:text-6xl", tone === "survive" && "text-survive", tone === "mid" && "text-fg", tone === "ruin" && "text-ruin"),
+						className: cn("type-hero mt-1", tone === "survive" && "text-survive", tone === "mid" && "text-fg", tone === "ruin" && "text-ruin"),
 						children: formatPct(rate, 1)
 					})]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ShareButtons, {})]
@@ -920,7 +920,7 @@ function RuinRiskSummary({ result, selected, onSelect }) {
 							children: segment.label
 						})]
 					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", {
-						className: "mt-0.5 block font-display text-base font-normal tabular-nums text-fg",
+						className: "type-body mt-0.5 block font-medium tabular-nums text-fg",
 						children: formatPct(segment.value, 1)
 					})]
 				}, segment.id))
@@ -932,10 +932,10 @@ function Stat({ label, value }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "min-w-0",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
-			className: "text-sm leading-snug text-fg-muted",
+			className: "type-caption text-fg-muted",
 			children: label
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", {
-			className: "font-display text-2xl tabular-nums tracking-tight text-fg lg:text-3xl",
+			className: "type-metric text-fg",
 			children: value
 		})]
 	});
@@ -960,7 +960,7 @@ function RuinStoryCard({ story, fireAge, embedded = false, compact = false, head
 			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", {
 				className: "flex shrink-0 items-center justify-between gap-3",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", {
-					className: "font-display text-xl text-fg",
+					className: "type-title text-fg",
 					children: heading
 				}), canDrawAnother ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Button, {
 					type: "button",
@@ -972,7 +972,7 @@ function RuinStoryCard({ story, fireAge, embedded = false, compact = false, head
 				}) : null]
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-				className: cn("mt-1.5 shrink-0 font-display text-fg", compact ? "text-2xl" : "text-3xl"),
+				className: "type-metric mt-1.5 shrink-0 text-fg",
 				children: headline
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
@@ -1042,10 +1042,10 @@ function Metric({ label, value, warn, compact }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: "min-w-0",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
-			className: "text-xs leading-snug break-words text-fg-muted sm:text-sm",
+			className: "type-caption leading-snug break-words text-fg-muted",
 			children: label
 		}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", {
-			className: cn("mt-0.5 font-display tabular-nums tracking-tight", compact ? "text-base lg:text-lg" : "text-lg sm:text-xl", warn ? "text-ruin" : "text-fg"),
+			className: cn("mt-0.5 font-display text-lg tabular-nums tracking-tight", warn ? "text-ruin" : "text-fg"),
 			children: value
 		})]
 	});
@@ -1277,11 +1277,11 @@ function CompareStat({ label, value, sub, fill, tone, compact }) {
 		className: cn("min-w-0 rounded-lg bg-surface-2 shadow-[var(--shadow-border)]", compact ? "px-2 py-1.5" : "px-3 py-2.5"),
 		children: [
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dt", {
-				className: "text-xs leading-snug text-fg-muted sm:text-sm",
+				className: "type-caption text-fg-muted",
 				children: label
 			}),
 			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("dd", {
-				className: cn("font-display tabular-nums tracking-tight text-fg", compact ? "text-xl lg:text-2xl" : "text-2xl"),
+				className: "type-metric text-fg",
 				children: value
 			}),
 			compact ? null : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
@@ -1395,7 +1395,7 @@ function Quad({ title, action, children }) {
 		children: [title ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", {
 			className: "mb-2 flex shrink-0 items-center justify-between gap-2",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", {
-				className: "min-w-0 font-display text-xl leading-snug text-fg",
+				className: "type-title min-w-0 text-fg",
 				children: title
 			}), action]
 		}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {

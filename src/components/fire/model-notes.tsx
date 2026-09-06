@@ -3,10 +3,10 @@ export function ModelNotes() {
     <article className="min-w-0 rounded-xl bg-surface p-4 shadow-[var(--shadow-border)] sm:p-5 md:p-6">
       <details className="group">
         <summary className="flex cursor-pointer list-none flex-col [&::-webkit-details-marker]:hidden">
-          <p className="text-[11px] font-medium tracking-[0.16em] text-fg-subtle uppercase">
+          <p className="type-caption font-medium tracking-[0.16em] text-fg-subtle uppercase">
             Model
           </p>
-          <h2 className="mt-1 flex items-center gap-2 font-display text-2xl text-fg">
+          <h2 className="type-title mt-1 flex items-center gap-2 text-fg">
             設計
             <span
               aria-hidden
@@ -50,8 +50,8 @@ export function ModelNotes() {
 function Note({ n, title, children }: { n: string; title: string; children: string }) {
   return (
     <li className="rounded-lg bg-surface-2 p-4 shadow-[var(--shadow-border)]">
-      <p className="text-[11px] tabular-nums text-fg-subtle">{n}</p>
-      <h3 className="mt-1 font-display text-lg text-fg">{title}</h3>
+      <p className="type-caption tabular-nums text-fg-subtle">{n}</p>
+      <h3 className="type-title mt-1 text-fg">{title}</h3>
       <p className="mt-2 text-sm leading-relaxed text-fg-muted">{children}</p>
     </li>
   );

@@ -6,7 +6,7 @@ import { t as twMerge } from "../_libs/tailwind-merge.mjs";
 import { t as create } from "../_libs/zustand.mjs";
 import { t as Slot } from "../_libs/radix-ui__react-slot.mjs";
 import { n as Trash2, r as Plus } from "../_libs/lucide-react.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/routes-BPd-Igsl.js
+//#region node_modules/.nitro/vite/services/ssr/assets/routes-BbTeEfmE.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var __defProp = Object.defineProperty;
@@ -603,7 +603,7 @@ function dispatch(job) {
 		});
 		return;
 	}
-	import("./engine-Dec3XYOv.mjs").then(({ simulate }) => {
+	import("./engine-D4QVeWYu.mjs").then(({ simulate }) => {
 		const run = () => {
 			try {
 				finish(job.id, simulate(job.plan, job.storyNonce));
@@ -1500,13 +1500,13 @@ function Field({ label, hint, className, children }) {
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
 			className: "flex min-h-4 items-baseline justify-between gap-2",
 			children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-				className: "whitespace-nowrap text-sm font-medium tracking-wide text-fg-muted",
+				className: "type-caption whitespace-nowrap font-medium tracking-wide text-fg-muted",
 				children: label
 			}), hint ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-				className: "shrink-0 whitespace-nowrap text-sm tabular-nums text-fg-subtle",
+				className: "type-caption shrink-0 whitespace-nowrap tabular-nums text-fg-subtle",
 				children: hint
 			}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-				className: "invisible text-sm",
+				className: "type-caption invisible",
 				children: "."
 			})]
 		}), children]
@@ -1517,13 +1517,13 @@ function SectionCard({ title, kicker, action, children, collapsible = false, def
 	const heading = /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
 		className: titleNowrap ? "shrink-0" : "min-w-0",
 		children: [kicker ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-			className: "text-[11px] font-medium tracking-[0.08em] text-fg-subtle",
+			className: "type-caption font-medium tracking-[0.08em] text-fg-subtle",
 			children: kicker
 		}) : null, /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h2", {
-			className: cn("flex items-center gap-2 font-display text-lg leading-snug text-fg", titleNowrap && "whitespace-nowrap"),
+			className: cn("type-title flex items-center gap-2 text-fg", titleNowrap && "whitespace-nowrap"),
 			children: [title, collapsible ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
 				"aria-hidden": true,
-				className: "text-[10px] leading-none text-fg-subtle transition-transform duration-150 group-open:rotate-180",
+				className: "type-caption leading-none text-fg-subtle transition-transform duration-150 group-open:rotate-180",
 				children: "▼"
 			}) : null]
 		})]
@@ -1795,7 +1795,7 @@ function MiniField({ label, children }) {
 	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
 		className: "grid gap-1",
 		children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-			className: "text-[10px] font-medium tracking-wide text-fg-subtle",
+			className: "type-caption font-medium tracking-wide text-fg-subtle",
 			children: label
 		}), children]
 	});
@@ -1821,7 +1821,7 @@ function CorrelationEditor() {
 				className: "mb-2 text-xs leading-relaxed text-fg-subtle",
 				children: "対角は1で固定。対称行列として両方を同時に更新する。非正定値なら計算側で微小なリッジを足す。"
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", {
-				className: "min-w-full border-collapse text-[11px]",
+				className: "type-caption min-w-full border-collapse",
 				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", {
 					className: "p-1 text-left font-medium text-fg-muted",
 					children: " "
@@ -1987,7 +1987,7 @@ function RuinEditor({ embedded = false, plain = false }) {
 					plan.ruinRules.length,
 					"件",
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
-						className: "text-[10px] not-italic transition-transform group-open:rotate-180",
+						className: "type-caption not-italic transition-transform group-open:rotate-180",
 						children: "▼"
 					})
 				]
@@ -2032,7 +2032,7 @@ function SourceCard({ embedded = false, plain = false }) {
 				className: "block text-xs font-medium sm:text-sm",
 				children: w.name
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-				className: cn("mt-0.5 block text-[10px] tabular-nums sm:text-xs", plan.dataWindow === w.id ? "text-accent-fg/80" : "text-fg-subtle"),
+				className: cn("mt-0.5 block type-caption tabular-nums", plan.dataWindow === w.id ? "text-accent-fg/80" : "text-fg-subtle"),
 				children: [w.n, "年"]
 			})]
 		}, w.id))
@@ -2136,7 +2136,7 @@ function SourceCard({ embedded = false, plain = false }) {
 					" · ",
 					win.period,
 					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("i", {
-						className: "text-[10px] not-italic transition-transform group-open:rotate-180",
+						className: "type-caption not-italic transition-transform group-open:rotate-180",
 						children: "▼"
 					})
 				]
@@ -2303,7 +2303,7 @@ function AppHeader() {
 						})
 					]
 				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-					className: "font-display text-lg leading-none tracking-tight text-fg",
+					className: "type-title leading-none text-fg",
 					children: "資産寿命シミュレータ"
 				})]
 			}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
@@ -2703,7 +2703,7 @@ function PlanPanel() {
 	});
 }
 var routes_exports = /* @__PURE__ */ __exportAll({ component: () => Home });
-var ResultsPanel = (0, import_react.lazy)(() => import("./results-panel-D0g-uffI.mjs").then((m) => ({ default: m.ResultsPanel })));
+var ResultsPanel = (0, import_react.lazy)(() => import("./results-panel-DL552BgE.mjs").then((m) => ({ default: m.ResultsPanel })));
 function Home() {
 	const hydrate = usePlanStore((s) => s.hydrate);
 	const hydrated = usePlanStore((s) => s.hydrated);

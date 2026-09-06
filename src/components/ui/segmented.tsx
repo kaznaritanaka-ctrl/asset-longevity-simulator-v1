@@ -22,7 +22,7 @@ export function SegmentedControl<T extends string>({
       role="tablist"
       aria-label={ariaLabel}
       className={cn(
-        "relative grid h-9 w-[11.5rem] shrink-0 grid-cols-2 rounded-full bg-bg-sunken p-0.5 text-xs font-medium",
+        "relative grid h-9 w-[11.5rem] shrink-0 grid-cols-2 rounded-full bg-bg-sunken p-0.5 type-caption font-medium",
         className,
       )}
     >

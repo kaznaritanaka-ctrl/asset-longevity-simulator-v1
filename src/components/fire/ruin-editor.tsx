@@ -126,7 +126,7 @@ export function RuinEditor({
           <span>資産枯渇条件</span>
           <span className="flex items-center gap-2 text-xs text-fg-muted">
             {plan.ruinRules.length}件
-            <i className="text-[10px] not-italic transition-transform group-open:rotate-180">▼</i>
+            <i className="type-caption not-italic transition-transform group-open:rotate-180">▼</i>
           </span>
         </summary>
         <div className="mt-3 border-t border-border pt-3">

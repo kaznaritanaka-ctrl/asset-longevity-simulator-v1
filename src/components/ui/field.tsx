@@ -15,15 +15,15 @@ export function Field({
   return (
     <label className={cn("grid min-w-0 gap-1.5", className)}>
       <span className="flex min-h-4 items-baseline justify-between gap-2">
-        <span className="whitespace-nowrap text-sm font-medium tracking-wide text-fg-muted">
+        <span className="type-caption whitespace-nowrap font-medium tracking-wide text-fg-muted">
           {label}
         </span>
         {hint ? (
-          <span className="shrink-0 whitespace-nowrap text-sm tabular-nums text-fg-subtle">
+          <span className="type-caption shrink-0 whitespace-nowrap tabular-nums text-fg-subtle">
             {hint}
           </span>
         ) : (
-          <span className="invisible text-sm">.</span>
+          <span className="type-caption invisible">.</span>
         )}
       </span>
       {children}
@@ -55,11 +55,11 @@ export function SectionCard({
   const heading = (
     <div className={titleNowrap ? "shrink-0" : "min-w-0"}>
       {kicker ? (
-        <p className="text-[11px] font-medium tracking-[0.08em] text-fg-subtle">{kicker}</p>
+        <p className="type-caption font-medium tracking-[0.08em] text-fg-subtle">{kicker}</p>
       ) : null}
       <h2
         className={cn(
-          "flex items-center gap-2 font-display text-lg leading-snug text-fg",
+          "type-title flex items-center gap-2 text-fg",
           titleNowrap && "whitespace-nowrap",
         )}
       >
@@ -67,7 +67,7 @@ export function SectionCard({
         {collapsible ? (
           <span
             aria-hidden
-            className="text-[10px] leading-none text-fg-subtle transition-transform duration-150 group-open:rotate-180"
+            className="type-caption leading-none text-fg-subtle transition-transform duration-150 group-open:rotate-180"
           >
             ▼
           </span>

@@ -3,8 +3,8 @@ import { n as require_react } from "../_libs/@radix-ui/react-compose-refs+[...].
 import { I as require_jsx_runtime, _ as useRouter, f as createRouter, g as createRootRoute, h as createFileRoute, l as Scripts, m as lazyRouteComponent, p as Outlet, u as HeadContent } from "../_libs/@tanstack/react-router+[...].mjs";
 import { t as TriangleAlert } from "../_libs/lucide-react.mjs";
 import { a as union, i as string, n as number, r as object, t as literal } from "../_libs/zod.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/router-Ct1iYnSs.js
-var router_Ct1iYnSs_exports = /* @__PURE__ */ __exportAll({ getRouter: () => getRouter });
+//#region node_modules/.nitro/vite/services/ssr/assets/router-CNxh8wXP.js
+var router_CNxh8wXP_exports = /* @__PURE__ */ __exportAll({ getRouter: () => getRouter });
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 function AppErrorComponent({ error }) {
@@ -273,7 +273,7 @@ function PreviewHostBridge() {
 	}, [router]);
 	return null;
 }
-var styles_default = "/assets/styles-BSFN0GEn.css";
+var styles_default = "/assets/styles-rDOY3Fll.css";
 var APP_NAME = "資産寿命シミュレータ";
 var Route$1 = createRootRoute({
 	head: () => ({
@@ -340,7 +340,7 @@ var Route$1 = createRootRoute({
 		})]
 	})
 });
-var $$splitComponentImporter = () => import("./routes-BPd-Igsl.mjs").then((n) => n.t);
+var $$splitComponentImporter = () => import("./routes-BbTeEfmE.mjs").then((n) => n.t);
 var rootRouteChildren = { IndexRoute: createFileRoute("/")({
 	component: lazyRouteComponent($$splitComponentImporter, "component"),
 	validateSearch: (search) => ({ p: typeof search.p === "string" ? search.p : void 0 })
@@ -357,4 +357,4 @@ function getRouter() {
 	});
 }
 //#endregion
-export { getRouter, router_Ct1iYnSs_exports as t };
+export { getRouter, router_CNxh8wXP_exports as t };

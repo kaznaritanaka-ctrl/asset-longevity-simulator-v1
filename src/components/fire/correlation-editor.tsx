@@ -23,7 +23,7 @@ export function CorrelationEditor() {
           <p className="mb-2 text-xs leading-relaxed text-fg-subtle">
             対角は1で固定。対称行列として両方を同時に更新する。非正定値なら計算側で微小なリッジを足す。
           </p>
-          <table className="min-w-full border-collapse text-[11px]">
+          <table className="type-caption min-w-full border-collapse">
             <thead>
               <tr>
                 <th className="p-1 text-left font-medium text-fg-muted"> </th>

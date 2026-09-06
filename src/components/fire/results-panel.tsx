@@ -132,7 +132,7 @@ function Quad({
     <section className="flex min-h-0 flex-col overflow-hidden rounded-xl bg-surface p-3 shadow-[var(--shadow-border)] sm:p-3.5">
       {title ? (
         <header className="mb-2 flex shrink-0 items-center justify-between gap-2">
-          <h2 className="min-w-0 font-display text-xl leading-snug text-fg">{title}</h2>
+          <h2 className="type-title min-w-0 text-fg">{title}</h2>
           {action}
         </header>
       ) : null}
