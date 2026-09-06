@@ -78,6 +78,11 @@ function Home() {
     if (status === "idle") run();
   };
 
+  const runAndShowResults = () => {
+    setTab("results");
+    run();
+  };
+
   const changeDesktopLayout = (layout: DesktopLayout) => {
     setDesktopLayout(layout);
     try {
@@ -115,6 +120,7 @@ function Home() {
             )}
           >
             <KpiHero
+              onRun={runAndShowResults}
               desktopControl={
                 <div className="hidden items-center gap-2 lg:flex">
                   <span className="text-xs text-fg-subtle">PC表示</span>
@@ -151,7 +157,7 @@ function Home() {
                 : "lg:col-span-4 lg:col-start-1 lg:row-start-1 lg:row-span-2",
             )}
           >
-            <PlanPanel />
+            <PlanPanel onRun={runAndShowResults} />
             <div className="mt-4 min-w-0">
               <AssetEditor />
             </div>
@@ -170,7 +176,7 @@ function Home() {
                 <ResultsPanel wide={wide} />
               </Suspense>
             ) : (
-              <IdleResults running={false} onRun={run} />
+              <IdleResults running={false} onRun={runAndShowResults} />
             )}
           </div>
         </div>
@@ -218,6 +224,7 @@ function TabButton({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={cn(
         "h-11 rounded-md text-sm font-medium transition-colors duration-150",

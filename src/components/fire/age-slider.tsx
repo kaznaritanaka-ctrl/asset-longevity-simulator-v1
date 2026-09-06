@@ -53,11 +53,10 @@ function clampTrio(
   return { currentAge: now, fireAge: fire, endAge: end };
 }
 
-export function AgeSlider({ compact = false }: { compact?: boolean }) {
+export function AgeSlider({ compact = false, onRun }: { compact?: boolean; onRun?: () => void }) {
   const plan = usePlanStore((s) => s.plan);
   const patchPlan = usePlanStore((s) => s.patchPlan);
   const status = usePlanStore((s) => s.status);
-  const reroll = usePlanStore((s) => s.reroll);
   const run = usePlanStore((s) => s.run);
   const trackRef = useRef<HTMLDivElement>(null);
   const planRef = useRef(plan);
@@ -216,25 +215,16 @@ export function AgeSlider({ compact = false }: { compact?: boolean }) {
         <div
           className={cn(
             compact
-              ? "col-span-3 mt-1 grid grid-cols-2 gap-2 min-[1400px]:col-span-2 min-[1400px]:mt-0"
+              ? "col-span-3 mt-1 grid grid-cols-1 gap-2 min-[1400px]:col-span-2 min-[1400px]:mt-0"
               : "ml-auto flex shrink-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2",
           )}
         >
           <Button
             type="button"
-            variant="secondary"
-            size="sm"
-            className={cn("px-2.5 text-xs sm:px-3 sm:text-sm", compact && "w-full")}
-            onClick={reroll}
-          >
-            {compact ? "乱数変更" : "乱数を引き直す"}
-          </Button>
-          <Button
-            type="button"
             variant="ghost"
             size="sm"
             className={cn("px-2.5 text-xs sm:px-3 sm:text-sm", compact && "w-full")}
-            onClick={run}
+            onClick={onRun ?? run}
           >
             {status === "running" ? "計算中" : compact ? "計算" : "再計算"}
           </Button>

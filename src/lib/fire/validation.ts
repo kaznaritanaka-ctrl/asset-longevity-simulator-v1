@@ -100,7 +100,7 @@ export function validatePlan(plan: Plan): PlanValidationIssue[] {
     add("inflationPct", "インフレ率は−100%より大きく、100%以下で入力してください。");
   }
   if (!Number.isFinite(plan.taxRatePct) || plan.taxRatePct < 0 || plan.taxRatePct > 90) {
-    add("taxRatePct", "売却税率は0〜90%で入力してください。");
+    add("taxRatePct", "売却額に対する実効税負担率は0〜90%で入力してください。");
   }
   if (!Number.isInteger(plan.trials) || plan.trials < 200 || plan.trials > 20_000) {
     add("trials", "試行回数は200〜20,000回の整数で入力してください。");

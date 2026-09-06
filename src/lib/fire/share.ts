@@ -268,17 +268,25 @@ export function readPlanFromLocation(): Plan | null {
   return decodePlan(token);
 }
 
-export function buildShareUrl(plan: Plan): string {
-  const url = new URL(window.location.href);
+export function buildShareUrl(plan: Plan, href = window.location.href): string {
+  const url = new URL(href);
+  url.searchParams.delete("p");
+  url.hash = `p=${encodePlan(plan)}`;
+  return url.toString();
+}
+
+export function buildPublicUrl(href = window.location.href): string {
+  const url = new URL(href);
+  url.searchParams.delete("p");
   url.hash = "";
-  url.searchParams.set("p", encodePlan(plan));
   return url.toString();
 }
 
 export function buildTweetText(plan: Plan, result: SimResult | null, url: string): string {
   const rate = result ? formatPct(result.successRate, 1) : "—";
+  const label = result?.failureMode === "custom" ? "計画達成率" : "資産が持つ割合";
   const lines = [
-    `資産寿命シミュレーターあなたの${plan.endAge}歳までのFIRE生存率は${rate}です`,
+    `資産寿命シミュレーター｜${plan.endAge}歳までの${label}は${rate}でした`,
     url,
   ];
   return lines.join("\n");

@@ -26,7 +26,10 @@ export type DataWindow = {
  * Equities/bonds/bills: Jordà–Schularick–Taylor Macrohistory Database R6 (1870–2020),
  *   local-currency total returns (Jordà, Knoll, Kuvshinov, Schularick, Taylor, QJE 2019).
  * US equities in JPY: (1 + US equity TR) × (1 + ΔJPY per USD) − 1, then Japan-CPI deflated.
- * Gold in JPY: World Bank Pink Sheet annual USD gold × JST JPY/USD, then Japan-CPI deflated.
+ * Gold in JPY: World Bank Pink Sheet annual USD gold (1960–2020 portion) × JST JPY/USD,
+ *   then Japan-CPI deflated. The repository does not include a reproducible source or build
+ *   procedure for the pre-1960 gold portion used by the long and postwar windows; those gold
+ *   statistics are provisional until that provenance is restored.
  *
  * Arithmetic mean is what the Monte Carlo engine uses. Geometric is the compounded path.
  */
@@ -105,8 +108,9 @@ export const SOURCE_CITATION = {
     papers: "Jordà, Knoll, Kuvshinov, Schularick, Taylor, “The Rate of Return on Everything, 1870–2015”, QJE 2019.",
   },
   gold: {
-    label: "World Bank Pink Sheet（年次金価格・USD）",
-    detail: "1833年以降の年平均ドル建て金価格。円換算は同年のJST 円/ドル。",
+    label: "World Bank Pink Sheet（1960–2020年の年次金価格・USD）",
+    detail:
+      "World Bankの公式長期系列は1960年以降。1960年以前を含む現行の「最長」「戦後」の金統計は、接続元データと再生成手順が未同梱のため検証中。円換算は同年のJST 円/ドル。",
   },
 };
 

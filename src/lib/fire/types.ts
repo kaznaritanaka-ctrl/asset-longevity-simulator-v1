@@ -76,6 +76,7 @@ export type StoryYear = {
 export type StoryRole = "ruin" | "median";
 
 export type RuinPeriod = "throughAge80" | "age81To100" | "afterAge100" | "survived";
+export type FailureMode = "depletion" | "custom";
 
 export type RuinStory = {
   trialIndex: number;
@@ -84,6 +85,7 @@ export type RuinStory = {
   ruinAge: number;
   yearsToRuin: number;
   maxDrawdown: number;
+  marketMaxDrawdown: number;
   fire10yCagr: number | null;
   worstYear: number;
   worstAge: number | null;
@@ -104,6 +106,7 @@ export type SimResult = {
   ages: number[];
   ruinCount: number;
   successRate: number;
+  failureMode: FailureMode;
   percentiles: PercentileBands;
   survival: number[];
   terminal: TerminalStats;

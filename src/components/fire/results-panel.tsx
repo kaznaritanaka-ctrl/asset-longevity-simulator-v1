@@ -56,7 +56,9 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
           <div className="flex items-center gap-3">
             <p className="hidden text-xs text-fg-subtle sm:block">
               {scale === "log" ? "縦軸は対数" : "帯は25–75% · 点線は5%と95%"}
-              {pathKind === "median" ? " · 緑線は中央値の一本" : " · 赤線は破綻の一本"}
+              {pathKind === "median"
+                ? " · 緑線は中央値の一本"
+                : ` · 赤線は${result.failureMode === "depletion" ? "資産枯渇" : "条件抵触"}の一本`}
             </p>
             <SegmentedControl
               ariaLabel="縦軸のスケール"

@@ -15,33 +15,44 @@ export function RuinRiskSummary({
 }) {
   const breakdown = buildRuinRiskBreakdown(result);
   const totalRuin = 1 - breakdown.survived;
+  const depletionOnly = result.failureMode === "depletion";
+  const failureLabel = depletionOnly ? "資産枯渇" : "条件抵触";
+  const successLabel = depletionOnly ? "資産維持" : "計画達成";
+  const firstSimulatedAge = result.currentAge + 1;
+  const intersects = (from: number, through: number) =>
+    Math.max(firstSimulatedAge, from) <= Math.min(result.endAge, through);
 
-  const segments = [
-    {
+  const segments: Array<{ id: RuinPeriod; label: string; value: number; color: string }> = [];
+  if (intersects(Number.NEGATIVE_INFINITY, 80)) {
+    segments.push({
       id: "throughAge80",
-      label: "80歳までに破綻",
+      label: `${Math.min(80, result.endAge)}歳までに${failureLabel}`,
       value: breakdown.throughAge80,
       color: "bg-ruin",
-    },
-    {
+    });
+  }
+  if (intersects(81, 100)) {
+    segments.push({
       id: "age81To100",
-      label: "81〜100歳で破綻",
+      label: `${Math.max(81, firstSimulatedAge)}〜${Math.min(100, result.endAge)}歳で${failureLabel}`,
       value: breakdown.age81To100,
       color: "bg-fire",
-    },
-    {
+    });
+  }
+  if (intersects(101, Number.POSITIVE_INFINITY)) {
+    segments.push({
       id: "afterAge100",
-      label: "101歳以降に破綻",
+      label: `${Math.max(101, firstSimulatedAge)}〜${result.endAge}歳で${failureLabel}`,
       value: breakdown.afterAge100,
       color: "bg-ruin/50",
-    },
-    {
-      id: "survived",
-      label: `${formatAge(result.endAge)}まで生存`,
-      value: breakdown.survived,
-      color: "bg-survive",
-    },
-  ] satisfies Array<{ id: RuinPeriod; label: string; value: number; color: string }>;
+    });
+  }
+  segments.push({
+    id: "survived",
+    label: `${formatAge(result.endAge)}まで${successLabel}`,
+    value: breakdown.survived,
+    color: "bg-survive",
+  });
   const selectedSegment = segments.find((segment) => segment.id === selected) ?? segments[0]!;
   const selectedStory = result.periodStories[selected];
 
@@ -49,8 +60,10 @@ export function RuinRiskSummary({
     <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
       <header className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="font-display text-lg text-fg">年齢別の破綻経路</h2>
-          <p className="mt-0.5 text-xs text-fg-muted">破綻した年齢を80歳・100歳で区切って表示</p>
+          <h2 className="font-display text-lg text-fg">年齢別の{failureLabel}経路</h2>
+          <p className="mt-0.5 text-xs text-fg-muted">
+            {failureLabel}した年齢を80歳・100歳で区切って表示
+          </p>
         </div>
         <p className="text-sm text-fg-muted">
           全期間{" "}
@@ -63,7 +76,7 @@ export function RuinRiskSummary({
       <div
         className="mt-4 flex h-3 overflow-hidden rounded-full bg-bg-sunken"
         role="img"
-        aria-label={`破綻確率 ${formatPct(totalRuin, 1)}。${segments
+        aria-label={`${failureLabel}率 ${formatPct(totalRuin, 1)}。${segments
           .map((segment) => `${segment.label} ${formatPct(segment.value, 1)}`)
           .join("、")}`}
       >
@@ -77,7 +90,16 @@ export function RuinRiskSummary({
         ))}
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div
+        className={cn(
+          "mt-4 grid grid-cols-2 gap-2",
+          segments.length === 2
+            ? "sm:grid-cols-2"
+            : segments.length === 3
+              ? "sm:grid-cols-3"
+              : "sm:grid-cols-4",
+        )}
+      >
         {segments.map((segment) => (
           <button
             key={segment.id}
@@ -111,6 +133,7 @@ export function RuinRiskSummary({
         fireAge={result.fireAge}
         embedded
         heading={`${selectedSegment.label}の代表経路`}
+        failureLabel={failureLabel}
       />
     </section>
   );

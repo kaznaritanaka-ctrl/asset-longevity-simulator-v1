@@ -15,11 +15,13 @@ export function RuinStoryCard({
   fireAge,
   embedded = false,
   heading = "代表シナリオ",
+  failureLabel = "破綻",
 }: {
   story: RuinStory | null;
   fireAge: number;
   embedded?: boolean;
   heading?: string;
+  failureLabel?: string;
 }) {
   const drawAnotherStory = usePlanStore((s) => s.drawAnotherStory);
 
@@ -54,7 +56,7 @@ export function RuinStoryCard({
         </p>
         {canDrawAnother ? (
           <Button type="button" variant="secondary" size="sm" onClick={drawAnotherStory}>
-            別の破綻を見る
+            別の{failureLabel}を見る
           </Button>
         ) : null}
       </div>
@@ -67,13 +69,24 @@ export function RuinStoryCard({
         {isMedian ? (
           <Metric label="終価" value={formatManYen(story.terminal)} />
         ) : (
-          <Metric label="破綻年齢" value={story.ruined ? formatAge(story.ruinAge) : "—"} />
+          <Metric
+            label={`${failureLabel}年齢`}
+            value={story.ruined ? formatAge(story.ruinAge) : "—"}
+          />
         )}
-        <Metric label={isMedian ? "期間" : "破綻まで"} value={`${story.yearsToRuin}年`} />
         <Metric
-          label="最大ドローダウン"
+          label={isMedian ? "期間" : `${failureLabel}まで`}
+          value={`${story.yearsToRuin}年`}
+        />
+        <Metric
+          label="入出金込みの残高最大減少"
           value={formatPct(story.maxDrawdown, 0)}
           warn={story.maxDrawdown <= -0.3}
+        />
+        <Metric
+          label="運用だけの最大下落"
+          value={formatPct(story.marketMaxDrawdown, 0)}
+          warn={story.marketMaxDrawdown <= -0.3}
         />
         <Metric
           label="FIRE後10年の実質CAGR"

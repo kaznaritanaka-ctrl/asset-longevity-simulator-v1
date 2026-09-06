@@ -36,17 +36,41 @@ type PlanState = {
   reroll: () => void;
   drawAnotherStory: () => void;
   reset: () => void;
+  saveSharedPlan: () => void;
+  restorePreviousPlan: () => void;
   run: () => void;
   hydrate: () => void;
 };
 
+let deferPersistence = false;
+let planBeforeShare: Plan | null = null;
+
 function persist(plan: Plan) {
   if (typeof window === "undefined") return;
+  if (deferPersistence) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));
   } catch {
     /* ignore quota */
   }
+}
+
+function readStoredPlan(): Plan | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? sanitizePlan(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
+}
+
+function clearSharedPlanFromLocation() {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  url.searchParams.delete("p");
+  if (url.hash.includes("p=")) url.hash = "";
+  window.history.replaceState(window.history.state, "", url);
 }
 
 function updatedPlanState(plan: Plan, result: SimResult | null) {
@@ -211,7 +235,37 @@ export const usePlanStore = create<PlanState>((set, get) => ({
 
   reset: () => {
     const plan = createDefaultPlan();
-    set(updatedPlanState(plan, get().result));
+    deferPersistence = false;
+    planBeforeShare = null;
+    clearSharedPlanFromLocation();
+    set({ ...updatedPlanState(plan, get().result), fromShare: false });
+  },
+
+  saveSharedPlan: () => {
+    deferPersistence = false;
+    planBeforeShare = null;
+    clearSharedPlanFromLocation();
+    persist(get().plan);
+    set({ fromShare: false });
+  },
+
+  restorePreviousPlan: () => {
+    const plan = planBeforeShare ?? createDefaultPlan();
+    deferPersistence = false;
+    planBeforeShare = null;
+    clearSharedPlanFromLocation();
+    persist(plan);
+    set({
+      plan,
+      result: null,
+      status: "idle",
+      activated: false,
+      fromShare: false,
+      storyNonce: 0,
+      resultStale: false,
+      error: null,
+      validationIssues: validatePlan(plan),
+    });
   },
 
   run: () => {
@@ -264,7 +318,8 @@ export const usePlanStore = create<PlanState>((set, get) => ({
     warmupWorker();
     const shared = readPlanFromLocation();
     if (shared) {
-      persist(shared);
+      planBeforeShare = readStoredPlan();
+      deferPersistence = true;
       set({
         plan: shared,
         hydrated: true,

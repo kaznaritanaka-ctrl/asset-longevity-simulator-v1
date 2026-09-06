@@ -9,6 +9,7 @@ import {
   portfolioMoments,
 } from "./math";
 import { buildRuinStory } from "./story";
+import { isAssetDepletionOnly } from "./risk-breakdown";
 import { validatePlan } from "./validation";
 
 function hitsRuin(rules: RuinRule[], wealth: number, age: number, annualSpend: number): boolean {
@@ -40,6 +41,7 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
   const endAge = Math.round(plan.endAge);
   const years = endAge - currentAge;
   const trials = Math.max(200, Math.min(20_000, Math.round(plan.trials) || 1000));
+  const failureMode = isAssetDepletionOnly(plan.ruinRules) ? "depletion" : "custom";
 
   if (years < 1 || plan.assets.length === 0) {
     const ages = [currentAge];
@@ -49,6 +51,7 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
       ages,
       ruinCount: 0,
       successRate: 1,
+      failureMode,
       percentiles: {
         p5: [plan.currentAssets],
         p10: [plan.currentAssets],
@@ -275,6 +278,7 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
     ages,
     ruinCount,
     successRate: 1 - ruinCount / trials,
+    failureMode,
     percentiles: { p5, p10, p25, p50, p75, p90, p95 },
     survival,
     terminal: {
