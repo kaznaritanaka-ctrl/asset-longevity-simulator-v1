@@ -49,6 +49,34 @@ describe("simulate", () => {
     assert.deepEqual(simulate(plan), simulate(plan));
   });
 
+  it("preserves the existing seeded result while collecting drawdowns", () => {
+    const result = simulate(
+      basePlan({
+        currentAge: 40,
+        fireAge: 45,
+        endAge: 55,
+        currentAssets: 1_000,
+        annualSpend: 100,
+        assets: [oneAsset({ expectedReturnPct: 5, volatilityPct: 18 })],
+        seed: 42,
+      }),
+    );
+
+    assert.equal(result.successRate, 0.75);
+    assert.equal(result.ruinCount, 50);
+    assert.ok(Math.abs(result.terminal.p50 - 606.0799132260884) < 1e-9);
+    assert.ok(Math.abs(result.terminal.p90 - 2132.4471196359837) < 1e-9);
+    assert.deepEqual(result.periodFailureCounts, {
+      throughAge80: 50,
+      age81To100: 0,
+      afterAge100: 0,
+    });
+    assert.equal(result.ruinStory?.trialIndex, 96);
+    assert.equal(result.ruinStory?.ruinAge, 53);
+    assert.equal(result.medianStory?.trialIndex, 81);
+    assert.equal(result.periodStories.throughAge80?.trialIndex, 96);
+  });
+
   it("grows deterministically with zero volatility", () => {
     const plan = basePlan({
       currentAge: 40,
@@ -62,6 +90,50 @@ describe("simulate", () => {
     assert.equal(result.trials, 200);
     assert.ok(Math.abs(result.terminal.p50 - expected) < 1e-6);
     assert.equal(result.ruinCount, 0);
+  });
+
+  it("returns an empty drawdown summary when there is no simulation period", () => {
+    const result = simulate(basePlan({ currentAge: 40, fireAge: 40, endAge: 40 }));
+    assert.deepEqual(result.balanceDrawdown, {
+      median: 0,
+      experienced30Pct: 0,
+      experienced50Pct: 0,
+    });
+  });
+
+  it("excludes a formation-period loss from the FIRE-period aggregation", () => {
+    const falling = oneAsset({
+      id: "falling",
+      expectedReturnPct: -50,
+      accumWeight: 100,
+      withdrawWeight: 0,
+    });
+    const rising = oneAsset({
+      id: "rising",
+      expectedReturnPct: 10,
+      accumWeight: 0,
+      withdrawWeight: 100,
+    });
+    const result = simulate(
+      basePlan({
+        currentAge: 40,
+        fireAge: 41,
+        endAge: 42,
+        currentAssets: 100,
+        assets: [falling, rising],
+        correlations: [
+          [1, 0],
+          [0, 1],
+        ],
+      }),
+    );
+
+    assert.ok(Math.abs(result.terminal.p50 - 55) < 1e-9);
+    assert.deepEqual(result.balanceDrawdown, {
+      median: 0,
+      experienced30Pct: 0,
+      experienced50Pct: 0,
+    });
   });
 
   it("marks ruin when spending exhausts a zero-return portfolio", () => {

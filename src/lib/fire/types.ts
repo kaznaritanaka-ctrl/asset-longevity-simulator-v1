@@ -79,6 +79,12 @@ export type RuinPeriod = "throughAge80" | "age81To100" | "afterAge100" | "surviv
 export type FailurePeriod = Exclude<RuinPeriod, "survived">;
 export type FailureMode = "depletion" | "custom";
 
+export type BalanceDrawdownSummary = {
+  median: number;
+  experienced30Pct: number;
+  experienced50Pct: number;
+};
+
 export type RuinStory = {
   trialIndex: number;
   role: StoryRole;
@@ -109,6 +115,7 @@ export type SimResult = {
   periodFailureCounts: Record<FailurePeriod, number>;
   successRate: number;
   failureMode: FailureMode;
+  balanceDrawdown: BalanceDrawdownSummary;
   percentiles: PercentileBands;
   survival: number[];
   terminal: TerminalStats;

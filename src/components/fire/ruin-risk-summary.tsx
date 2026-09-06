@@ -9,6 +9,10 @@ function formatRiskRate(value: number, count: number): string {
   return formatPct(value, 1);
 }
 
+function formatDrawdown(value: number): string {
+  return formatPct(value, 1).replace("-", "−");
+}
+
 export function RuinRiskSummary({
   result,
   selected,
@@ -153,6 +157,32 @@ export function RuinRiskSummary({
         年齢帯を選ぶと、その区分に該当する代表経路を表示する。各値は全試行に占める割合。
       </p>
 
+      <section
+        className="mt-4 rounded-lg bg-bg-sunken px-3 py-3"
+        aria-label="途中経路のリスク。FIRE開始後、過去の最高資産残高からの減少を入出金込みで集計"
+      >
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+          <h3 className="font-display text-sm text-fg">途中経路のリスク</h3>
+          <p className="text-[10px] leading-relaxed text-fg-subtle">
+            FIRE開始後の最高残高からの減少（入出金込み）
+          </p>
+        </div>
+        <dl className="mt-3 grid grid-cols-3 divide-x divide-border">
+          <DrawdownMetric
+            label="最大DD 中央値"
+            value={formatDrawdown(result.balanceDrawdown.median)}
+          />
+          <DrawdownMetric
+            label="30%以上を経験"
+            value={formatPct(result.balanceDrawdown.experienced30Pct, 1)}
+          />
+          <DrawdownMetric
+            label="50%以上を経験"
+            value={formatPct(result.balanceDrawdown.experienced50Pct, 1)}
+          />
+        </dl>
+      </section>
+
       <RuinStoryCard
         story={selectedStory}
         fireAge={result.fireAge}
@@ -161,5 +191,14 @@ export function RuinRiskSummary({
         failureLabel={failureLabel}
       />
     </section>
+  );
+}
+
+function DrawdownMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 px-2 first:pl-0 last:pr-0">
+      <dt className="text-[10px] leading-tight text-fg-subtle">{label}</dt>
+      <dd className="mt-1 font-display text-lg tabular-nums text-fg">{value}</dd>
+    </div>
   );
 }
