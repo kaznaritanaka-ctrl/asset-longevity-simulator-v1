@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { createDefaultPlan, PRESETS } from "./defaults.ts";
+import { resizeCorrelations } from "./math.ts";
 import { sanitizePlan, validatePlan } from "./validation.ts";
 
 describe("plan validation", () => {
@@ -36,22 +37,37 @@ describe("plan validation", () => {
     assert.ok(plan.correlations.every((row) => row.length === 3));
   });
 
-  it("keeps the balanced preset assets and correlations aligned", () => {
+  it("changes only allocation weights when applying presets", () => {
     const source = createDefaultPlan();
+    source.assets[0]!.expectedReturnPct = 12.34;
     source.assets.push({
       id: "custom",
       name: "追加資産",
       kind: "alt",
       expectedReturnPct: 4,
       volatilityPct: 10,
-      accumWeight: 0,
-      withdrawWeight: 0,
+      accumWeight: 25,
+      withdrawWeight: 25,
     });
-    const balanced = PRESETS.find((preset) => preset.id === "balanced")!.apply(source);
+    source.correlations = resizeCorrelations(source.correlations, source.assets.length, 0.2);
 
-    assert.equal(balanced.correlations.length, balanced.assets.length);
-    assert.ok(balanced.correlations.every((row) => row.length === balanced.assets.length));
-    assert.deepEqual(validatePlan(balanced), []);
+    for (const preset of PRESETS) {
+      const applied = preset.apply(source);
+      assert.equal(applied.assets.length, source.assets.length);
+      assert.equal(applied.assets[0]!.expectedReturnPct, 12.34);
+      assert.equal(applied.assets.find((asset) => asset.id === "custom")!.accumWeight, 0);
+      assert.equal(applied.assets.find((asset) => asset.id === "custom")!.withdrawWeight, 0);
+      assert.deepEqual(applied.correlations, source.correlations);
+      assert.equal(
+        applied.assets.reduce((sum, asset) => sum + asset.accumWeight, 0),
+        100,
+      );
+      assert.equal(
+        applied.assets.reduce((sum, asset) => sum + asset.withdrawWeight, 0),
+        100,
+      );
+      assert.deepEqual(validatePlan(applied), []);
+    }
   });
 
   it("rejects non-finite external values", () => {

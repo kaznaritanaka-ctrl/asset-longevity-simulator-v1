@@ -16,11 +16,7 @@ function weightSum(values: number[]): number {
   return values.reduce((a, b) => a + b, 0);
 }
 
-function WeightBar({
-  items,
-}: {
-  items: { id: string; name: string; weight: number }[];
-}) {
+function WeightBar({ items }: { items: { id: string; name: string; weight: number }[] }) {
   const sum = weightSum(items.map((i) => i.weight)) || 1;
   return (
     <div className="flex h-2.5 overflow-hidden rounded-full bg-bg-sunken">
@@ -88,7 +84,8 @@ export function AssetEditor() {
               <span>形成期 {accumSum.toFixed(0)}%</span>
               {result ? (
                 <span className="tabular-nums">
-                  実質 {formatPct(result.portfolio.accum.mu)} · σ {formatPct(result.portfolio.accum.sigma)}
+                  実質 {formatPct(result.portfolio.accum.mu)} · σ{" "}
+                  {formatPct(result.portfolio.accum.sigma)}
                 </span>
               ) : null}
             </div>
@@ -103,7 +100,8 @@ export function AssetEditor() {
               <span>取崩期 {wdSum.toFixed(0)}%</span>
               {result ? (
                 <span className="tabular-nums">
-                  実質 {formatPct(result.portfolio.withdraw.mu)} · σ {formatPct(result.portfolio.withdraw.sigma)}
+                  実質 {formatPct(result.portfolio.withdraw.mu)} · σ{" "}
+                  {formatPct(result.portfolio.withdraw.sigma)}
                 </span>
               ) : null}
             </div>
@@ -130,7 +128,9 @@ export function AssetEditor() {
       }
     >
       <p className="mb-3 text-xs leading-relaxed text-fg-subtle">
-        期待リターンとリスク（年率標準偏差）をクラスごとに指定。配分は形成期 / 取崩期で別々。合計が100%でなくても計算時に正規化する。
+        期待リターンとリスク（年率標準偏差）をクラスごとに指定。配分は形成期 /
+        取崩期で別々。合計が100%でなくても計算時に正規化する。
+        プリセットは配分だけを変更し、追加した資産は0%にする。
       </p>
 
       <div className="flex flex-col gap-3">
@@ -151,9 +151,7 @@ export function AssetEditor() {
               />
               <Select
                 value={asset.kind}
-                onChange={(e) =>
-                  updateAsset(asset.id, { kind: e.target.value as AssetKind })
-                }
+                onChange={(e) => updateAsset(asset.id, { kind: e.target.value as AssetKind })}
                 className="h-9 w-20 shrink-0 px-1.5 text-xs sm:w-28 md:h-9"
               >
                 {KINDS.map((k) => (
@@ -189,9 +187,7 @@ export function AssetEditor() {
                   step={0.1}
                   min={0}
                   value={asset.volatilityPct}
-                  onChange={(e) =>
-                    updateAsset(asset.id, { volatilityPct: Number(e.target.value) })
-                  }
+                  onChange={(e) => updateAsset(asset.id, { volatilityPct: Number(e.target.value) })}
                   className="h-9 md:h-9"
                 />
               </MiniField>
@@ -201,9 +197,7 @@ export function AssetEditor() {
                   step={1}
                   min={0}
                   value={asset.accumWeight}
-                  onChange={(e) =>
-                    updateAsset(asset.id, { accumWeight: Number(e.target.value) })
-                  }
+                  onChange={(e) => updateAsset(asset.id, { accumWeight: Number(e.target.value) })}
                   className="h-9 md:h-9"
                 />
               </MiniField>

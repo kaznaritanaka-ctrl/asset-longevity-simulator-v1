@@ -45,62 +45,72 @@ export function createDefaultPlan(): Plan {
   };
 }
 
+type PhaseWeight = { accum: number; withdraw: number };
+
+const BALANCED_WEIGHTS: Record<string, PhaseWeight> = {
+  "jp-equity": { accum: 25, withdraw: 20 },
+  "us-equity": { accum: 45, withdraw: 35 },
+  bonds: { accum: 15, withdraw: 30 },
+  gold: { accum: 10, withdraw: 10 },
+  cash: { accum: 5, withdraw: 5 },
+};
+
+function applyAllocationPreset(plan: Plan, weights: Record<string, PhaseWeight>): Plan {
+  return {
+    ...plan,
+    assets: plan.assets.map((asset) => {
+      const weight = weights[asset.id];
+      return {
+        ...asset,
+        accumWeight: weight?.accum ?? 0,
+        withdrawWeight: weight?.withdraw ?? 0,
+      };
+    }),
+  };
+}
+
 export const PRESETS: { id: string; name: string; hint: string; apply: (plan: Plan) => Plan }[] = [
   {
     id: "conservative",
     name: "保守型",
     hint: "取崩期は債券・現金を厚く。シーケンスリスクを抑える",
-    apply: (plan) => ({
-      ...plan,
-      assets: plan.assets.map((a) => {
-        if (a.id === "jp-equity") return { ...a, accumWeight: 20, withdrawWeight: 10 };
-        if (a.id === "us-equity") return { ...a, accumWeight: 35, withdrawWeight: 20 };
-        if (a.id === "bonds") return { ...a, accumWeight: 25, withdrawWeight: 45 };
-        if (a.id === "gold") return { ...a, accumWeight: 10, withdrawWeight: 10 };
-        return { ...a, accumWeight: 10, withdrawWeight: 15 };
+    apply: (plan) =>
+      applyAllocationPreset(plan, {
+        "jp-equity": { accum: 20, withdraw: 10 },
+        "us-equity": { accum: 35, withdraw: 20 },
+        bonds: { accum: 25, withdraw: 45 },
+        gold: { accum: 10, withdraw: 10 },
+        cash: { accum: 10, withdraw: 15 },
       }),
-    }),
   },
   {
     id: "balanced",
     name: "バランス型",
     hint: "形成期は株式7割、取崩期は株式55%",
-    apply: (plan) => {
-      const win = windowById(plan.dataWindow);
-      return {
-        ...plan,
-        assets: assetsFromWindow(win),
-        correlations: win.correlations.map((row) => row.slice()),
-      };
-    },
+    apply: (plan) => applyAllocationPreset(plan, BALANCED_WEIGHTS),
   },
   {
     id: "equity",
     name: "株式重視",
     hint: "取崩期も株式8割。期待値は高いが破綻尾が厚い",
-    apply: (plan) => ({
-      ...plan,
-      assets: plan.assets.map((a) => {
-        if (a.id === "jp-equity") return { ...a, accumWeight: 30, withdrawWeight: 25 };
-        if (a.id === "us-equity") return { ...a, accumWeight: 55, withdrawWeight: 55 };
-        if (a.id === "bonds") return { ...a, accumWeight: 5, withdrawWeight: 10 };
-        if (a.id === "gold") return { ...a, accumWeight: 7, withdrawWeight: 7 };
-        return { ...a, accumWeight: 3, withdrawWeight: 3 };
+    apply: (plan) =>
+      applyAllocationPreset(plan, {
+        "jp-equity": { accum: 30, withdraw: 25 },
+        "us-equity": { accum: 55, withdraw: 55 },
+        bonds: { accum: 5, withdraw: 10 },
+        gold: { accum: 7, withdraw: 7 },
+        cash: { accum: 3, withdraw: 3 },
       }),
-    }),
   },
   {
     id: "all-equity",
     name: "株式100%",
     hint: "日本株40・米国株60。債券・金・現金はゼロ",
-    apply: (plan) => ({
-      ...plan,
-      assets: plan.assets.map((a) => {
-        if (a.id === "jp-equity") return { ...a, accumWeight: 40, withdrawWeight: 40 };
-        if (a.id === "us-equity") return { ...a, accumWeight: 60, withdrawWeight: 60 };
-        return { ...a, accumWeight: 0, withdrawWeight: 0 };
+    apply: (plan) =>
+      applyAllocationPreset(plan, {
+        "jp-equity": { accum: 40, withdraw: 40 },
+        "us-equity": { accum: 60, withdraw: 60 },
       }),
-    }),
   },
 ];
 
