@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { SegmentedControl } from "@/components/ui/segmented";
 import { formatAge, formatInt, formatManYen, formatPct } from "@/lib/fire/format";
 import type { RuinStory } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
 import { usePlanStore } from "@/store/plan-store";
+import type { ChartScale } from "./fan-chart";
+import { createStoryYScale } from "./ruin-story-scale";
 
 function signedPct(decimal: number | null, digits = 1): string {
   if (decimal == null || !Number.isFinite(decimal)) return "—";
@@ -22,12 +25,16 @@ export function RuinStoryCard({
   embedded = false,
   compact = false,
   heading = "代表シナリオ",
+  scale = "log",
+  onScaleChange,
 }: {
   story: RuinStory | null;
   fireAge: number;
   embedded?: boolean;
   compact?: boolean;
   heading?: string;
+  scale?: ChartScale;
+  onScaleChange?: (value: ChartScale) => void;
 }) {
   const drawAnotherStory = usePlanStore((s) => s.drawAnotherStory);
 
@@ -60,13 +67,27 @@ export function RuinStoryCard({
         !compact && embedded && "mt-5 border-t border-border pt-4",
       )}
     >
-      <header className="flex shrink-0 items-center justify-between gap-3">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-2">
         <h3 className="type-title text-fg">{heading}</h3>
-        {canDrawAnother ? (
-          <Button type="button" variant="secondary" size="sm" className="shrink-0 text-xs" onClick={drawAnotherStory}>
-            別の資産枯渇シナリオを見る
-          </Button>
-        ) : null}
+        <div className="flex shrink-0 items-center gap-2">
+          {onScaleChange ? (
+            <SegmentedControl
+              ariaLabel="代表シナリオの縦軸スケール"
+              className="h-7 w-28"
+              value={scale}
+              onChange={onScaleChange}
+              options={[
+                { id: "log", label: "片対数" },
+                { id: "linear", label: "線形" },
+              ]}
+            />
+          ) : null}
+          {canDrawAnother ? (
+            <Button type="button" variant="secondary" size="sm" className="shrink-0 text-xs" onClick={drawAnotherStory}>
+              別の資産枯渇シナリオを見る
+            </Button>
+          ) : null}
+        </div>
       </header>
 
       <p className="type-metric mt-1.5 shrink-0 text-fg">
@@ -81,7 +102,7 @@ export function RuinStoryCard({
         {story.narrative}
       </p>
 
-      <Spark story={story} fireAge={fireAge} isMedian={isMedian} fill={compact} />
+      <Spark story={story} fireAge={fireAge} isMedian={isMedian} fill={compact} scale={scale} />
 
       <dl
         className={cn(
@@ -171,22 +192,23 @@ function Spark({
   fireAge,
   isMedian,
   fill,
+  scale,
 }: {
   story: RuinStory;
   fireAge: number;
   isMedian: boolean;
   fill?: boolean;
+  scale: ChartScale;
 }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const vals = story.years.map((y) => y.wealth);
   const n = vals.length;
   if (n < 2) return null;
-  const max = Math.max(...vals, 1);
   const w = 640;
   const h = fill ? 160 : 72;
   const pad = 4;
   const x = (i: number) => (i / (n - 1)) * w;
-  const y = (v: number) => pad + (1 - v / max) * (h - pad * 2);
+  const y = createStoryYScale(vals, scale, h, pad);
   const d = vals.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
   const fireI = story.years.findIndex((yr) => yr.age >= fireAge);
   const ruinI = story.years.findIndex((yr) => yr.age >= story.ruinAge);
@@ -223,7 +245,7 @@ function Spark({
         className="h-full w-full cursor-crosshair touch-pan-y overflow-visible rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
         role="img"
         tabIndex={0}
-        aria-label="このシナリオの資産の推移。マウスを動かすか、左右の矢印キーで年齢ごとの資産額を確認できます。"
+        aria-label={`このシナリオの資産の推移（${scale === "log" ? "片対数" : "線形"}）。マウスを動かすか、左右の矢印キーで年齢ごとの資産額を確認できます。`}
         onPointerMove={(event) => {
           if (event.pointerType !== "touch") selectNearestYear(event.clientX, event.currentTarget);
         }}

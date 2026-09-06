@@ -73,7 +73,7 @@ export function RuinRiskSummary({
       full: `101歳以降に${failureLabel}`,
       value: breakdown.afterAge100,
       count: breakdown.counts.afterAge100,
-      color: "bg-ruin/50",
+      color: "bg-ruin/75",
     });
   }
   segments.push({
@@ -127,7 +127,7 @@ export function RuinRiskSummary({
       >
         <p className="type-caption text-fg-muted">途中経路のリスク（FIRE開始後・入出金込み）</p>
         <dl className="mt-1 grid grid-cols-3 gap-x-3">
-          <Stat label="最大DD 中央値" value={formatDrawdown(result.balanceDrawdown.median)} />
+          <Stat label="最大ドローダウン中央値" value={formatDrawdown(result.balanceDrawdown.median)} />
           <Stat label="30%以上を経験" value={formatPct(result.balanceDrawdown.experienced30Pct, 1)} />
           <Stat label="50%以上を経験" value={formatPct(result.balanceDrawdown.experienced50Pct, 1)} />
         </dl>
@@ -142,7 +142,7 @@ export function RuinRiskSummary({
       ) : null}
 
       <div
-        className="mt-3 flex h-2 shrink-0 overflow-hidden rounded-full bg-bg-sunken"
+        className="mt-3 flex h-2.5 shrink-0 overflow-hidden rounded-full bg-bg-sunken saturate-125"
         role="img"
         aria-label={`${failureLabel}率 ${formatRiskRate(totalRuin, result.ruinCount)}。${segments
           .map(

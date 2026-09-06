@@ -67,6 +67,8 @@ export function ResultsPanel() {
           fireAge={result.fireAge}
           compact
           heading={storyHeading}
+          scale={scale}
+          onScaleChange={setScale}
         />
       </Quad>
 
