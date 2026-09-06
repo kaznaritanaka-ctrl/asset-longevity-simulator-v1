@@ -11,6 +11,7 @@ import {
 import { buildRuinStory } from "./story";
 import { isAssetDepletionOnly } from "./risk-breakdown";
 import { validatePlan } from "./validation";
+import { maxBalanceDrawdown, summarizeBalanceDrawdowns } from "./balance-drawdown";
 
 function hitsRuin(rules: RuinRule[], wealth: number, age: number, annualSpend: number): boolean {
   for (const rule of rules) {
@@ -53,6 +54,7 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
       periodFailureCounts: { throughAge80: 0, age81To100: 0, afterAge100: 0 },
       successRate: 1,
       failureMode,
+      balanceDrawdown: { median: 0, experienced30Pct: 0, experienced50Pct: 0 },
       percentiles: {
         p5: [plan.currentAssets],
         p10: [plan.currentAssets],
@@ -179,6 +181,16 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
     ruined[trial] = isRuined ? 1 : 0;
   }
 
+  const fireStartIndex = Math.max(0, Math.min(T - 1, fireAge - currentAge));
+  const trialBalanceDrawdowns = new Float64Array(trials);
+  for (let trial = 0; trial < trials; trial++) {
+    trialBalanceDrawdowns[trial] = maxBalanceDrawdown(
+      wealth.subarray(trial * T, (trial + 1) * T),
+      fireStartIndex,
+    );
+  }
+  const balanceDrawdown = summarizeBalanceDrawdowns(trialBalanceDrawdowns);
+
   const ages = Array.from({ length: T }, (_, i) => currentAge + i);
   const col = new Array<number>(trials);
   const p5: number[] = [];
@@ -288,6 +300,7 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
     periodFailureCounts,
     successRate: 1 - ruinCount / trials,
     failureMode,
+    balanceDrawdown,
     percentiles: { p5, p10, p25, p50, p75, p90, p95 },
     survival,
     terminal: {

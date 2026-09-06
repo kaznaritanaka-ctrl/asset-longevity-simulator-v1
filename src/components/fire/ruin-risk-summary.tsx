@@ -10,6 +10,10 @@ function formatRiskRate(value: number, count: number): string {
   return formatPct(value, 1);
 }
 
+function formatDrawdown(value: number): string {
+  return formatPct(value, 1).replace("-", "−");
+}
+
 export function RuinRiskSummary({
   result,
   selected,
@@ -116,6 +120,18 @@ export function RuinRiskSummary({
         />
         <Stat label={failureLabel} value={formatRiskRate(totalRuin, result.ruinCount)} />
       </dl>
+
+      <section
+        className="mt-3 shrink-0"
+        aria-label="途中経路のリスク。FIRE開始後、過去の最高資産残高からの減少を入出金込みで集計"
+      >
+        <p className="type-caption text-fg-muted">途中経路のリスク（FIRE開始後・入出金込み）</p>
+        <dl className="mt-1 grid grid-cols-3 gap-x-3">
+          <Stat label="最大DD 中央値" value={formatDrawdown(result.balanceDrawdown.median)} />
+          <Stat label="30%以上を経験" value={formatPct(result.balanceDrawdown.experienced30Pct, 1)} />
+          <Stat label="50%以上を経験" value={formatPct(result.balanceDrawdown.experienced50Pct, 1)} />
+        </dl>
+      </section>
 
       {error ? (
         <p className="mt-2 text-xs text-ruin">{error}</p>
