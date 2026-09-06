@@ -1,11 +1,10 @@
 import type { SimResult } from "./types";
 
 export type RuinRiskBreakdown = {
-  preFire: number;
-  firstTenYears: number;
-  later: number;
+  throughAge80: number;
+  age81To100: number;
+  afterAge100: number;
   survived: number;
-  firstTenEndAge: number;
 };
 
 function clampProbability(value: number): number {
@@ -20,18 +19,16 @@ function survivalAt(result: Pick<SimResult, "ages" | "survival">, age: number): 
 }
 
 export function buildRuinRiskBreakdown(
-  result: Pick<SimResult, "ages" | "survival" | "successRate" | "fireAge" | "endAge">,
+  result: Pick<SimResult, "ages" | "survival" | "successRate">,
 ): RuinRiskBreakdown {
-  const firstTenEndAge = Math.min(result.endAge, result.fireAge + 10);
-  const atFire = survivalAt(result, result.fireAge);
-  const afterFirstTen = survivalAt(result, firstTenEndAge);
+  const afterAge80 = survivalAt(result, 80);
+  const afterAge100 = survivalAt(result, 100);
   const survived = clampProbability(result.successRate);
 
   return {
-    preFire: clampProbability(1 - atFire),
-    firstTenYears: clampProbability(atFire - afterFirstTen),
-    later: clampProbability(afterFirstTen - survived),
+    throughAge80: clampProbability(1 - afterAge80),
+    age81To100: clampProbability(afterAge80 - afterAge100),
+    afterAge100: clampProbability(afterAge100 - survived),
     survived,
-    firstTenEndAge,
   };
 }

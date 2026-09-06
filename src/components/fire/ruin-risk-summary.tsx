@@ -5,15 +5,11 @@ import type { SimResult } from "@/lib/fire/types";
 export function RuinRiskSummary({ result }: { result: SimResult }) {
   const breakdown = buildRuinRiskBreakdown(result);
   const totalRuin = 1 - breakdown.survived;
-  const firstTenLabel =
-    breakdown.firstTenEndAge < result.fireAge + 10
-      ? `FIRE後〜${formatAge(breakdown.firstTenEndAge)}`
-      : "FIRE後10年";
 
   const segments = [
-    { label: "FIRE前", value: breakdown.preFire, color: "bg-fire" },
-    { label: firstTenLabel, value: breakdown.firstTenYears, color: "bg-ruin" },
-    { label: "それ以降", value: breakdown.later, color: "bg-ruin/50" },
+    { label: "80歳までに破綻", value: breakdown.throughAge80, color: "bg-ruin" },
+    { label: "81〜100歳で破綻", value: breakdown.age81To100, color: "bg-fire" },
+    { label: "101歳以降に破綻", value: breakdown.afterAge100, color: "bg-ruin/50" },
     {
       label: `${formatAge(result.endAge)}まで生存`,
       value: breakdown.survived,
@@ -25,8 +21,8 @@ export function RuinRiskSummary({ result }: { result: SimResult }) {
     <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
       <header className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="font-display text-lg text-fg">破綻リスクの内訳</h2>
-          <p className="mt-0.5 text-xs text-fg-muted">形成期と取り崩し期のどこで破綻するか</p>
+          <h2 className="font-display text-lg text-fg">年齢別の破綻経路</h2>
+          <p className="mt-0.5 text-xs text-fg-muted">破綻した年齢を80歳・100歳で区切って表示</p>
         </div>
         <p className="text-sm text-fg-muted">
           全期間{" "}
@@ -67,7 +63,7 @@ export function RuinRiskSummary({ result }: { result: SimResult }) {
         ))}
       </dl>
       <p className="mt-3 text-[11px] leading-relaxed text-fg-subtle">
-        各値は全試行に占める割合。FIRE後10年の値が大きいほど、取り崩し初期の相場順序の影響を受けやすい。
+        各値は全試行に占める割合。終了年齢が80歳または100歳より前の場合、それ以降の区分は0%になる。
       </p>
     </section>
   );

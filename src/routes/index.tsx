@@ -6,6 +6,7 @@ import { KpiHero } from "@/components/fire/kpi-hero";
 import { PlanPanel } from "@/components/fire/plan-panel";
 import { RuinEditor } from "@/components/fire/ruin-editor";
 import { SourceCard } from "@/components/fire/source-card";
+import { SegmentedControl } from "@/components/ui/segmented";
 import { cn } from "@/lib/utils";
 import { usePlanStore, consumeSkipAutoRun } from "@/store/plan-store";
 
@@ -21,6 +22,9 @@ export const Route = createFileRoute("/")({
 });
 
 type Tab = "setup" | "results";
+type DesktopLayout = "wide" | "stacked";
+
+const LAYOUT_STORAGE_KEY = "shisan-jumyou-desktop-layout";
 
 function Home() {
   const hydrate = usePlanStore((s) => s.hydrate);
@@ -32,11 +36,21 @@ function Home() {
   const status = usePlanStore((s) => s.status);
   const fromShare = usePlanStore((s) => s.fromShare);
   const [tab, setTab] = useState<Tab>("setup");
+  const [desktopLayout, setDesktopLayout] = useState<DesktopLayout>("wide");
   const planRef = useRef(plan);
 
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
+      if (saved === "wide" || saved === "stacked") setDesktopLayout(saved);
+    } catch {
+      /* use the wide default */
+    }
+  }, []);
 
   useEffect(() => {
     if (!hydrated || !fromShare) return;
@@ -66,10 +80,26 @@ function Home() {
     if (status === "idle") run();
   };
 
+  const changeDesktopLayout = (layout: DesktopLayout) => {
+    setDesktopLayout(layout);
+    try {
+      localStorage.setItem(LAYOUT_STORAGE_KEY, layout);
+    } catch {
+      /* keep the in-memory preference */
+    }
+  };
+
+  const wide = desktopLayout === "wide";
+
   return (
     <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
       <AppHeader />
-      <main className="mx-auto w-full max-w-6xl min-w-0 overflow-x-hidden px-3 pb-28 pt-5 sm:px-4 md:px-6 md:pb-16 md:pt-8">
+      <main
+        className={cn(
+          "mx-auto w-full min-w-0 overflow-x-hidden px-3 pb-28 pt-5 sm:px-4 md:px-6 md:pb-16 md:pt-8",
+          wide ? "max-w-[1600px]" : "max-w-6xl",
+        )}
+      >
         <KpiHero />
 
         <div className="mt-4 grid grid-cols-2 gap-1 rounded-lg bg-bg-sunken p-1 lg:hidden">
@@ -81,8 +111,33 @@ function Home() {
           </TabButton>
         </div>
 
-        <div className="mt-5 grid w-full min-w-0 items-start gap-5 lg:grid-cols-12 lg:gap-6">
-          <div className={cn(tab === "setup" ? "block" : "hidden", "min-w-0 max-w-full lg:col-span-4 lg:block")}>
+        <div className="mt-3 hidden items-center justify-end gap-2 lg:flex">
+          <span className="text-xs text-fg-subtle">PC表示</span>
+          <SegmentedControl
+            ariaLabel="PC画面のレイアウト"
+            className="w-[9rem]"
+            value={desktopLayout}
+            onChange={changeDesktopLayout}
+            options={[
+              { id: "wide", label: "横長" },
+              { id: "stacked", label: "縦長" },
+            ]}
+          />
+        </div>
+
+        <div
+          className={cn(
+            "mt-5 grid w-full min-w-0 items-start gap-5 lg:gap-6",
+            wide ? "lg:grid-cols-[minmax(300px,360px)_minmax(0,1fr)]" : "lg:grid-cols-12",
+          )}
+        >
+          <div
+            className={cn(
+              tab === "setup" ? "block" : "hidden",
+              "min-w-0 max-w-full lg:block",
+              wide ? "lg:col-span-1" : "lg:col-span-4",
+            )}
+          >
             <PlanPanel />
             <div className="mt-4 min-w-0">
               <AssetEditor />
@@ -94,10 +149,16 @@ function Home() {
               <SourceCard />
             </div>
           </div>
-          <div className={cn(tab === "results" ? "block" : "hidden", "min-w-0 max-w-full lg:col-span-8 lg:block")}>
+          <div
+            className={cn(
+              tab === "results" ? "block" : "hidden",
+              "min-w-0 max-w-full lg:block",
+              wide ? "lg:col-span-1" : "lg:col-span-8",
+            )}
+          >
             {showResults ? (
               <Suspense fallback={<IdleResults running />}>
-                <ResultsPanel />
+                <ResultsPanel wide={wide} />
               </Suspense>
             ) : (
               <IdleResults running={false} onRun={run} />

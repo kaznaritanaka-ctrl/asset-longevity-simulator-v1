@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { SegmentedControl } from "@/components/ui/segmented";
 import { expectedDeathAge } from "@/lib/fire/life-table";
 import type { Sex, StoryRole } from "@/lib/fire/types";
+import { cn } from "@/lib/utils";
 import { FanChart, type ChartScale } from "./fan-chart";
 import { ModelNotes } from "./model-notes";
 import { PercentileTable } from "./percentile-table";
@@ -19,7 +20,7 @@ function ClientChart({ children, heightClass }: { children: ReactNode; heightCla
   return children;
 }
 
-export function ResultsPanel() {
+export function ResultsPanel({ wide = false }: { wide?: boolean }) {
   const result = usePlanStore((s) => s.result);
   const status = usePlanStore((s) => s.status);
   const sex = usePlanStore((s) => (s.plan.sex === "female" ? "female" : "male"));
@@ -39,10 +40,17 @@ export function ResultsPanel() {
   const deathAge = expectedDeathAge(result.currentAge, sex);
 
   return (
-    <div className="flex min-w-0 flex-col gap-4">
-      <RuinRiskSummary result={result} />
+    <div className={cn("grid min-w-0 grid-cols-1 gap-4", wide && "min-[1400px]:grid-cols-2")}>
+      <div className={cn("min-w-0", wide && "min-[1400px]:col-span-2")}>
+        <RuinRiskSummary result={result} />
+      </div>
 
-      <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
+      <section
+        className={cn(
+          "min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5",
+          wide && "min-[1400px]:col-span-2",
+        )}
+      >
         <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg text-fg">資産の経路</h2>
           <div className="flex items-center gap-3">
@@ -72,12 +80,14 @@ export function ResultsPanel() {
         </ClientChart>
       </section>
 
-      <RuinStoryCard
-        story={featured}
-        pathKind={pathKind}
-        onPathKindChange={setPathKind}
-        fireAge={result.fireAge}
-      />
+      <div className="min-w-0">
+        <RuinStoryCard
+          story={featured}
+          pathKind={pathKind}
+          onPathKindChange={setPathKind}
+          fireAge={result.fireAge}
+        />
+      </div>
 
       <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
         <header className="mb-3 flex flex-wrap items-start justify-between gap-2">
@@ -110,7 +120,9 @@ export function ResultsPanel() {
         <PercentileTable result={result} />
       </section>
 
-      <ModelNotes />
+      <div className="min-w-0">
+        <ModelNotes />
+      </div>
     </div>
   );
 }
