@@ -1,7 +1,7 @@
 import { Plus, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Field, SectionCard } from "@/components/ui/field";
+import { SectionCard } from "@/components/ui/field";
 import { Input, Select } from "@/components/ui/input";
 import { ASSET_COLORS, matchingPresetId, PRESETS } from "@/lib/fire/defaults";
 import { formatPct } from "@/lib/fire/format";
@@ -9,6 +9,7 @@ import { KIND_LABEL, type AssetKind } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
 import { usePlanStore } from "@/store/plan-store";
 import { CorrelationEditor } from "./correlation-editor";
+import { SourceCard } from "./source-card";
 
 const KINDS: AssetKind[] = ["equity", "bond", "cash", "alt"];
 
@@ -61,7 +62,7 @@ export function AssetEditor() {
       }
       preview={
         <div className="grid gap-3">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 min-[1400px]:grid-cols-4">
             {PRESETS.map((p) => (
               <button
                 key={p.id}
@@ -79,51 +80,57 @@ export function AssetEditor() {
               </button>
             ))}
           </div>
-          <div className="grid gap-1.5">
-            <div className="flex items-center justify-between text-[11px] text-fg-muted">
-              <span>形成期 {accumSum.toFixed(0)}%</span>
-              {result ? (
-                <span className="tabular-nums">
-                  実質 {formatPct(result.portfolio.accum.mu)} · σ{" "}
-                  {formatPct(result.portfolio.accum.sigma)}
-                </span>
-              ) : null}
+          <div className="grid gap-2 min-[1400px]:grid-cols-2">
+            <div className="grid min-w-0 gap-1.5">
+              <div className="flex items-center justify-between gap-2 text-[11px] text-fg-muted">
+                <span className="shrink-0">形成期 {accumSum.toFixed(0)}%</span>
+                {result ? (
+                  <span className="truncate tabular-nums">
+                    実質 {formatPct(result.portfolio.accum.mu)} · σ{" "}
+                    {formatPct(result.portfolio.accum.sigma)}
+                  </span>
+                ) : null}
+              </div>
+              <WeightBar
+                items={plan.assets.map((a) => ({
+                  id: a.id,
+                  name: a.name,
+                  weight: a.accumWeight,
+                }))}
+              />
             </div>
-            <WeightBar
-              items={plan.assets.map((a) => ({
-                id: a.id,
-                name: a.name,
-                weight: a.accumWeight,
-              }))}
-            />
-            <div className="flex items-center justify-between text-[11px] text-fg-muted">
-              <span>取崩期 {wdSum.toFixed(0)}%</span>
-              {result ? (
-                <span className="tabular-nums">
-                  実質 {formatPct(result.portfolio.withdraw.mu)} · σ{" "}
-                  {formatPct(result.portfolio.withdraw.sigma)}
-                </span>
-              ) : null}
+            <div className="grid min-w-0 gap-1.5">
+              <div className="flex items-center justify-between gap-2 text-[11px] text-fg-muted">
+                <span className="shrink-0">取崩期 {wdSum.toFixed(0)}%</span>
+                {result ? (
+                  <span className="truncate tabular-nums">
+                    実質 {formatPct(result.portfolio.withdraw.mu)} · σ{" "}
+                    {formatPct(result.portfolio.withdraw.sigma)}
+                  </span>
+                ) : null}
+              </div>
+              <WeightBar
+                items={plan.assets.map((a) => ({
+                  id: a.id,
+                  name: a.name,
+                  weight: a.withdrawWeight,
+                }))}
+              />
             </div>
-            <WeightBar
-              items={plan.assets.map((a) => ({
-                id: a.id,
-                name: a.name,
-                weight: a.withdrawWeight,
-              }))}
-            />
           </div>
-          <Field label="試行回数">
+          <label className="grid gap-1.5 min-[1400px]:grid-cols-[auto_minmax(0,1fr)] min-[1400px]:items-center">
+            <span className="text-xs font-medium text-fg-muted">試行回数</span>
             <Select
               value={plan.trials}
               onChange={(e) => patchPlan({ trials: Number(e.target.value) })}
+              className="min-[1400px]:h-9"
             >
               <option value={1000}>1,000（速い）</option>
               <option value={3000}>3,000（標準）</option>
               <option value={5000}>5,000</option>
               <option value={10000}>10,000（精密）</option>
             </Select>
-          </Field>
+          </label>
         </div>
       }
     >
@@ -219,6 +226,10 @@ export function AssetEditor() {
       </div>
 
       <CorrelationEditor />
+
+      <div className="mt-3">
+        <SourceCard embedded />
+      </div>
     </SectionCard>
   );
 }

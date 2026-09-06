@@ -53,7 +53,7 @@ function clampTrio(
   return { currentAge: now, fireAge: fire, endAge: end };
 }
 
-export function AgeSlider() {
+export function AgeSlider({ compact = false }: { compact?: boolean }) {
   const plan = usePlanStore((s) => s.plan);
   const patchPlan = usePlanStore((s) => s.patchPlan);
   const status = usePlanStore((s) => s.status);
@@ -132,7 +132,10 @@ export function AgeSlider() {
       <div
         ref={trackRef}
         data-track="1"
-        className="relative mt-4 h-11 cursor-pointer touch-none select-none"
+        className={cn(
+          "relative mt-4 h-11 cursor-pointer touch-none select-none",
+          compact && "hidden",
+        )}
         onPointerDown={onTrackPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -189,12 +192,19 @@ export function AgeSlider() {
         />
       </div>
 
-      <div className="mt-1 flex justify-between text-[11px] text-fg-muted">
+      <div className={cn("mt-1 flex justify-between text-[11px] text-fg-muted", compact && "hidden")}>
         <span>{AGE_MIN}</span>
         <span>{AGE_MAX}</span>
       </div>
 
-      <div className="mt-3 flex flex-nowrap items-end gap-2 sm:gap-4">
+      <div
+        className={cn(
+          "mt-3",
+          compact
+            ? "grid grid-cols-[3.5rem_3.5rem_minmax(0,1fr)] items-end gap-2 min-[1400px]:grid-cols-[3.5rem_3.5rem_6.75rem_minmax(0,1fr)_minmax(0,1fr)]"
+            : "flex flex-nowrap items-end gap-2 sm:gap-4",
+        )}
+      >
         <AgeField label="現在" value={now} onCommit={(v) => apply("now", v)} />
         <AgeField label="FIRE" value={fire} onCommit={(v) => apply("fire", v)} />
         <AgeField
@@ -203,17 +213,37 @@ export function AgeSlider() {
           onCommit={(v) => apply("end", v)}
           wide
         />
-        <div className="ml-auto flex shrink-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-          <Button type="button" variant="secondary" size="sm" className="px-2.5 text-xs sm:px-3 sm:text-sm" onClick={reroll}>
-            乱数を引き直す
+        <div
+          className={cn(
+            compact
+              ? "col-span-3 mt-1 grid grid-cols-2 gap-2 min-[1400px]:col-span-2 min-[1400px]:mt-0"
+              : "ml-auto flex shrink-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-2",
+          )}
+        >
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className={cn("px-2.5 text-xs sm:px-3 sm:text-sm", compact && "w-full")}
+            onClick={reroll}
+          >
+            {compact ? "乱数変更" : "乱数を引き直す"}
           </Button>
-          <Button type="button" variant="ghost" size="sm" className="px-2.5 text-xs sm:px-3 sm:text-sm" onClick={run}>
-            {status === "running" ? "計算中" : "再計算"}
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className={cn("px-2.5 text-xs sm:px-3 sm:text-sm", compact && "w-full")}
+            onClick={run}
+          >
+            {status === "running" ? "計算中" : compact ? "計算" : "再計算"}
           </Button>
         </div>
       </div>
       <p className="mt-2 text-xs leading-relaxed text-fg-subtle">
-        現在 ≦ FIRE ＜ シミュレーション終了年齢。すでに取り崩し中なら現在＝FIRE。数字は書き終わって欄を出たときに反映する。
+        {compact
+          ? "現在 ≦ FIRE ＜ 終了年齢。数字は欄を出たときに反映する。"
+          : "現在 ≦ FIRE ＜ シミュレーション終了年齢。すでに取り崩し中なら現在＝FIRE。数字は書き終わって欄を出たときに反映する。"}
       </p>
     </div>
   );
@@ -306,7 +336,9 @@ function ThumbHandle({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
     >
-      <span className={cn("block size-3.5 rounded-full shadow-[var(--shadow-border)]", className)} />
+      <span
+        className={cn("block size-3.5 rounded-full shadow-[var(--shadow-border)]", className)}
+      />
       <span className="pointer-events-none absolute -top-4 whitespace-nowrap text-[10px] font-medium tabular-nums text-fg">
         {formatAge(age)}
       </span>

@@ -40,17 +40,12 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
   const deathAge = expectedDeathAge(result.currentAge, sex);
 
   return (
-    <div className={cn("grid min-w-0 grid-cols-1 gap-4", wide && "min-[1400px]:grid-cols-2")}>
-      <div className={cn("min-w-0", wide && "min-[1400px]:col-span-2")}>
+    <div className={cn("grid min-w-0 grid-cols-1 gap-4", wide && "xl:grid-cols-2")}>
+      <div className="min-w-0">
         <RuinRiskSummary result={result} />
       </div>
 
-      <section
-        className={cn(
-          "min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5",
-          wide && "min-[1400px]:col-span-2",
-        )}
-      >
+      <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
         <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg text-fg">資産の経路</h2>
           <div className="flex items-center gap-3">
@@ -69,7 +64,7 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
             />
           </div>
         </header>
-        <ClientChart heightClass="h-64 sm:h-80">
+        <ClientChart heightClass={cn("h-64 sm:h-80", wide && "xl:h-56")}>
           <FanChart
             result={result}
             scale={scale}

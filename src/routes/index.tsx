@@ -4,8 +4,6 @@ import { AppHeader } from "@/components/fire/app-header";
 import { AssetEditor } from "@/components/fire/asset-editor";
 import { KpiHero } from "@/components/fire/kpi-hero";
 import { PlanPanel } from "@/components/fire/plan-panel";
-import { RuinEditor } from "@/components/fire/ruin-editor";
-import { SourceCard } from "@/components/fire/source-card";
 import { SegmentedControl } from "@/components/ui/segmented";
 import { cn } from "@/lib/utils";
 import { usePlanStore, consumeSkipAutoRun } from "@/store/plan-store";
@@ -100,60 +98,71 @@ function Home() {
           wide ? "max-w-[1600px]" : "max-w-6xl",
         )}
       >
-        <KpiHero />
-
-        <div className="mt-4 grid grid-cols-2 gap-1 rounded-lg bg-bg-sunken p-1 lg:hidden">
-          <TabButton active={tab === "setup"} onClick={() => setTab("setup")}>
-            条件
-          </TabButton>
-          <TabButton active={tab === "results"} onClick={openResults}>
-            結果
-          </TabButton>
-        </div>
-
-        <div className="mt-3 hidden items-center justify-end gap-2 lg:flex">
-          <span className="text-xs text-fg-subtle">PC表示</span>
-          <SegmentedControl
-            ariaLabel="PC画面のレイアウト"
-            className="w-[9rem]"
-            value={desktopLayout}
-            onChange={changeDesktopLayout}
-            options={[
-              { id: "wide", label: "横長" },
-              { id: "stacked", label: "縦長" },
-            ]}
-          />
-        </div>
-
         <div
           className={cn(
-            "mt-5 grid w-full min-w-0 items-start gap-5 lg:gap-6",
-            wide ? "lg:grid-cols-[minmax(300px,360px)_minmax(0,1fr)]" : "lg:grid-cols-12",
+            "grid w-full min-w-0 items-start gap-4 lg:gap-5",
+            wide
+              ? "lg:grid-cols-[minmax(300px,360px)_minmax(0,1fr)] min-[1400px]:grid-cols-[440px_minmax(0,1fr)]"
+              : "lg:grid-cols-12",
           )}
         >
           <div
             className={cn(
+              "min-w-0",
+              wide
+                ? "lg:col-span-1 lg:col-start-2 lg:row-start-1"
+                : "lg:col-span-8 lg:col-start-5 lg:row-start-1",
+            )}
+          >
+            <KpiHero
+              desktopControl={
+                <div className="hidden items-center gap-2 lg:flex">
+                  <span className="text-xs text-fg-subtle">PC表示</span>
+                  <SegmentedControl
+                    ariaLabel="PC画面のレイアウト"
+                    className="w-[9rem]"
+                    value={desktopLayout}
+                    onChange={changeDesktopLayout}
+                    options={[
+                      { id: "wide", label: "横長" },
+                      { id: "stacked", label: "縦長" },
+                    ]}
+                  />
+                </div>
+              }
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-1 rounded-lg bg-bg-sunken p-1 lg:hidden">
+            <TabButton active={tab === "setup"} onClick={() => setTab("setup")}>
+              条件
+            </TabButton>
+            <TabButton active={tab === "results"} onClick={openResults}>
+              結果
+            </TabButton>
+          </div>
+
+          <div
+            className={cn(
               tab === "setup" ? "block" : "hidden",
               "min-w-0 max-w-full lg:block",
-              wide ? "lg:col-span-1" : "lg:col-span-4",
+              wide
+                ? "lg:col-span-1 lg:col-start-1 lg:row-start-1 lg:row-span-2"
+                : "lg:col-span-4 lg:col-start-1 lg:row-start-1 lg:row-span-2",
             )}
           >
             <PlanPanel />
             <div className="mt-4 min-w-0">
               <AssetEditor />
             </div>
-            <div className="mt-4 min-w-0">
-              <RuinEditor />
-            </div>
-            <div className="mt-4 min-w-0">
-              <SourceCard />
-            </div>
           </div>
           <div
             className={cn(
               tab === "results" ? "block" : "hidden",
               "min-w-0 max-w-full lg:block",
-              wide ? "lg:col-span-1" : "lg:col-span-8",
+              wide
+                ? "lg:col-span-1 lg:col-start-2 lg:row-start-2"
+                : "lg:col-span-8 lg:col-start-5 lg:row-start-2",
             )}
           >
             {showResults ? (

@@ -1,10 +1,11 @@
+import type { ReactNode } from "react";
 import { formatInt, formatManYen, formatPct } from "@/lib/fire/format";
 import { cn } from "@/lib/utils";
 import { usePlanStore } from "@/store/plan-store";
 import { AgeSlider } from "./age-slider";
 import { ShareButtons } from "./share-buttons";
 
-export function KpiHero() {
+export function KpiHero({ desktopControl }: { desktopControl?: ReactNode }) {
   const result = usePlanStore((s) => s.result);
   const status = usePlanStore((s) => s.status);
   const resultStale = usePlanStore((s) => s.resultStale);
@@ -21,7 +22,10 @@ export function KpiHero() {
           生存率
           {result ? (resultStale ? " · 前回結果" : ` · ${formatInt(result.trials)}経路`) : ""}
         </p>
-        <ShareButtons />
+        <div className="flex shrink-0 items-center gap-2">
+          {desktopControl}
+          <ShareButtons />
+        </div>
       </div>
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div>
@@ -87,7 +91,7 @@ export function KpiHero() {
         </div>
       ) : null}
 
-      <div className="mt-6 border-t border-border pt-5">
+      <div className="mt-6 border-t border-border pt-5 lg:hidden">
         <AgeSlider />
       </div>
     </section>

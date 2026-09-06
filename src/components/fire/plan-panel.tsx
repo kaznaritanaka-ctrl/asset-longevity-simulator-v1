@@ -1,6 +1,8 @@
 import { Field, SectionCard } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { usePlanStore } from "@/store/plan-store";
+import { AgeSlider } from "./age-slider";
+import { RuinEditor } from "./ruin-editor";
 
 export function PlanPanel() {
   const plan = usePlanStore((s) => s.plan);
@@ -9,7 +11,11 @@ export function PlanPanel() {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <SectionCard title="条件設定">
-        <div className="grid grid-cols-2 items-start gap-x-2 gap-y-3 sm:gap-x-3 sm:gap-y-3">
+        <div className="hidden lg:block">
+          <AgeSlider compact />
+          <div className="my-4 border-t border-border" />
+        </div>
+        <div className="grid grid-cols-2 items-start gap-x-2 gap-y-3 sm:gap-x-3 sm:gap-y-3 min-[1400px]:grid-cols-3">
           <Field label="金融資産" hint="万円">
             <Input
               type="number"
@@ -76,21 +82,34 @@ export function PlanPanel() {
             />
           </Field>
         </div>
-        <label className="mt-4 flex items-start gap-2 text-sm text-fg">
-          <input
-            type="checkbox"
-            suppressHydrationWarning
-            className="mt-0.5 size-4 accent-accent"
-            checked={plan.returnsAreNominal}
-            onChange={(e) => patchPlan({ returnsAreNominal: e.target.checked })}
-          />
-          <span>
-            入力は名目（チェック時のみインフレで実質化）。出典ボタンで入れた系列はすでに日本CPI済みなので、通常は外す。
-          </span>
-        </label>
-        <p className="mt-3 text-xs leading-relaxed text-fg-subtle">
-          税率は取崩期に支出を賄う売却額へかける。手取り支出を保つため、売却は 1 / (1−税率) に上乗せ。取得費・NISA・配当は見ていない。非課税なら 0。
-        </p>
+        <details className="group mt-4 rounded-lg border border-border bg-bg-sunken/45 px-3 py-2.5">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm text-fg [&::-webkit-details-marker]:hidden">
+            <span>リターン・税の扱い</span>
+            <span className="flex items-center gap-2 text-xs text-fg-muted">
+              {plan.returnsAreNominal ? "名目入力" : "実質入力"}
+              <i className="text-[10px] not-italic transition-transform group-open:rotate-180">▼</i>
+            </span>
+          </summary>
+          <div className="mt-3 border-t border-border pt-3">
+            <label className="flex items-start gap-2 text-sm text-fg">
+              <input
+                type="checkbox"
+                suppressHydrationWarning
+                className="mt-0.5 size-4 accent-accent"
+                checked={plan.returnsAreNominal}
+                onChange={(e) => patchPlan({ returnsAreNominal: e.target.checked })}
+              />
+              <span>
+                入力は名目（チェック時のみインフレで実質化）。出典データは日本CPI調整済みなので、通常は外す。
+              </span>
+            </label>
+            <p className="mt-3 text-xs leading-relaxed text-fg-subtle">
+              税率は取崩期の売却額へかける。手取り支出を保つため、売却は 1 / (1−税率)
+              に上乗せ。取得費・NISA・配当は見ていない。
+            </p>
+          </div>
+        </details>
+        <RuinEditor embedded />
       </SectionCard>
     </div>
   );
