@@ -76,6 +76,7 @@ export type StoryYear = {
 export type StoryRole = "ruin" | "median";
 
 export type RuinPeriod = "throughAge80" | "age81To100" | "afterAge100" | "survived";
+export type FailurePeriod = Exclude<RuinPeriod, "survived">;
 export type FailureMode = "depletion" | "custom";
 
 export type RuinStory = {
@@ -105,6 +106,7 @@ export type SimResult = {
   years: number;
   ages: number[];
   ruinCount: number;
+  periodFailureCounts: Record<FailurePeriod, number>;
   successRate: number;
   failureMode: FailureMode;
   percentiles: PercentileBands;

@@ -4,6 +4,11 @@ import type { RuinPeriod, SimResult } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
 import { RuinStoryCard } from "./ruin-story";
 
+function formatRiskRate(value: number, count: number): string {
+  if (count > 0 && value < 0.0005) return "<0.1%";
+  return formatPct(value, 1);
+}
+
 export function RuinRiskSummary({
   result,
   selected,
@@ -14,7 +19,7 @@ export function RuinRiskSummary({
   onSelect: (period: RuinPeriod) => void;
 }) {
   const breakdown = buildRuinRiskBreakdown(result);
-  const totalRuin = 1 - breakdown.survived;
+  const totalRuin = result.trials > 0 ? result.ruinCount / result.trials : 0;
   const depletionOnly = result.failureMode === "depletion";
   const failureLabel = depletionOnly ? "資産枯渇" : "条件抵触";
   const successLabel = depletionOnly ? "資産維持" : "計画達成";
@@ -22,12 +27,19 @@ export function RuinRiskSummary({
   const intersects = (from: number, through: number) =>
     Math.max(firstSimulatedAge, from) <= Math.min(result.endAge, through);
 
-  const segments: Array<{ id: RuinPeriod; label: string; value: number; color: string }> = [];
+  const segments: Array<{
+    id: RuinPeriod;
+    label: string;
+    value: number;
+    count: number;
+    color: string;
+  }> = [];
   if (intersects(Number.NEGATIVE_INFINITY, 80)) {
     segments.push({
       id: "throughAge80",
       label: `${Math.min(80, result.endAge)}歳までに${failureLabel}`,
       value: breakdown.throughAge80,
+      count: breakdown.counts.throughAge80,
       color: "bg-ruin",
     });
   }
@@ -36,6 +48,7 @@ export function RuinRiskSummary({
       id: "age81To100",
       label: `${Math.max(81, firstSimulatedAge)}〜${Math.min(100, result.endAge)}歳で${failureLabel}`,
       value: breakdown.age81To100,
+      count: breakdown.counts.age81To100,
       color: "bg-fire",
     });
   }
@@ -44,6 +57,7 @@ export function RuinRiskSummary({
       id: "afterAge100",
       label: `${Math.max(101, firstSimulatedAge)}〜${result.endAge}歳で${failureLabel}`,
       value: breakdown.afterAge100,
+      count: breakdown.counts.afterAge100,
       color: "bg-ruin/50",
     });
   }
@@ -51,6 +65,7 @@ export function RuinRiskSummary({
     id: "survived",
     label: `${formatAge(result.endAge)}まで${successLabel}`,
     value: breakdown.survived,
+    count: breakdown.counts.survived,
     color: "bg-survive",
   });
   const selectedSegment = segments.find((segment) => segment.id === selected) ?? segments[0]!;
@@ -68,16 +83,23 @@ export function RuinRiskSummary({
         <p className="text-sm text-fg-muted">
           全期間{" "}
           <strong className="font-display text-xl font-normal tabular-nums text-ruin">
-            {formatPct(totalRuin, 1)}
+            {formatRiskRate(totalRuin, result.ruinCount)}
           </strong>
+          <span className="ml-1 text-xs tabular-nums text-fg-subtle">
+            ({result.ruinCount.toLocaleString("ja-JP")} / {result.trials.toLocaleString("ja-JP")}
+            経路)
+          </span>
         </p>
       </header>
 
       <div
         className="mt-4 flex h-3 overflow-hidden rounded-full bg-bg-sunken"
         role="img"
-        aria-label={`${failureLabel}率 ${formatPct(totalRuin, 1)}。${segments
-          .map((segment) => `${segment.label} ${formatPct(segment.value, 1)}`)
+        aria-label={`${failureLabel}率 ${formatRiskRate(totalRuin, result.ruinCount)}。${segments
+          .map(
+            (segment) =>
+              `${segment.label} ${formatRiskRate(segment.value, segment.count)}、${segment.count}経路`,
+          )
           .join("、")}`}
       >
         {segments.map((segment) => (
@@ -85,7 +107,7 @@ export function RuinRiskSummary({
             key={segment.label}
             className={segment.color}
             style={{ width: `${segment.value * 100}%` }}
-            title={`${segment.label} ${formatPct(segment.value, 1)}`}
+            title={`${segment.label} ${formatRiskRate(segment.value, segment.count)}（${segment.count.toLocaleString("ja-JP")}経路）`}
           />
         ))}
       </div>
@@ -119,8 +141,11 @@ export function RuinRiskSummary({
               {segment.label}
             </span>
             <strong className="mt-1 block font-display text-lg font-normal tabular-nums text-fg">
-              {formatPct(segment.value, 1)}
+              {formatRiskRate(segment.value, segment.count)}
             </strong>
+            <span className="mt-0.5 block text-[10px] tabular-nums text-fg-subtle">
+              {segment.count.toLocaleString("ja-JP")} / {result.trials.toLocaleString("ja-JP")}経路
+            </span>
           </button>
         ))}
       </div>

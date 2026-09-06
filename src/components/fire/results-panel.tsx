@@ -87,7 +87,9 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
           <div>
             <h2 className="font-display text-lg text-fg">資産寿命と寿命の比較</h2>
             <p className="text-xs text-fg-muted">
-              資産が持つ経路の割合と、生命表上でその年齢まで生きている割合
+              同じ{result.endAge}歳時点の
+              {result.failureMode === "depletion" ? "資産維持率" : "計画達成率"}
+              と、生命表上の条件付き生存率
             </p>
           </div>
           <SegmentedControl

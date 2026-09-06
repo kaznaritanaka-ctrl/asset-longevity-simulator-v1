@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { formatAge, formatPct } from "@/lib/fire/format";
+import { formatAge, formatInt, formatPct } from "@/lib/fire/format";
 import {
   assetHalfLifeAge,
   expectedDeathAge,
@@ -30,8 +30,12 @@ export function SurvivalChart({ result }: { result: SimResult }) {
   const horizonYears = Math.max(1, result.endAge - result.currentAge);
   const assetYears = halfAge != null ? halfAge - result.currentAge : horizonYears;
   const censored = halfAge == null;
-  const barMax = Math.max(ex, assetYears, 1);
   const sexLabel = sex === "female" ? "女性" : "男性";
+  const lifeAtEnd = lifeSurvival(result.currentAge, result.endAge, sex);
+  const successfulPaths = Math.max(0, result.trials - result.ruinCount);
+  const assetRateLabel = result.failureMode === "depletion" ? "資産維持率" : "計画達成率";
+  const assetCurveLabel =
+    result.failureMode === "depletion" ? "資産が持つ割合" : "計画を達成する割合";
 
   const data = result.ages.map((age, i) => ({
     age,
@@ -43,28 +47,24 @@ export function SurvivalChart({ result }: { result: SimResult }) {
     <div className="min-w-0">
       <dl className="mb-4 grid grid-cols-2 gap-3">
         <CompareStat
-          label={`${sexLabel}の平均余命`}
-          value={`${ex.toFixed(1)}年`}
-          sub={`${formatAge(result.currentAge)} → ${formatAge(Math.round(deathAge))}`}
-          fill={ex / barMax}
-          tone="life"
+          label={`${assetRateLabel}（${formatAge(result.endAge)}）`}
+          value={formatPct(result.successRate, 1)}
+          sub={`${formatInt(successfulPaths)} / ${formatInt(result.trials)}経路`}
+          fill={result.successRate}
+          tone="asset"
         />
         <CompareStat
-          label="資産寿命（半数）"
-          value={censored ? `${horizonYears}年+` : `${assetYears}年`}
-          sub={
-            censored
-              ? `終了年齢（${formatAge(result.endAge)}）まで半分は持つ`
-              : `${formatAge(result.currentAge)} → ${formatAge(halfAge!)}`
-          }
-          fill={assetYears / barMax}
-          tone="asset"
+          label={`${sexLabel}生存率（${formatAge(result.endAge)}）`}
+          value={formatPct(lifeAtEnd, 1)}
+          sub={`${formatAge(result.currentAge)}時点の生存者を100%とした割合`}
+          fill={lifeAtEnd}
+          tone="life"
         />
       </dl>
       <p className="mb-3 text-xs leading-relaxed text-fg-muted">
         {censored
-          ? `平均余命は${ex.toFixed(1)}年（${formatAge(Math.round(deathAge))}）。この条件では資産の半分が尽きる前にシミュレーション終了年齢へ達する。曲線の平均は${meanYears.toFixed(0)}年（打ち切り）。`
-          : `平均余命${ex.toFixed(1)}年に対し、経路の半数が${formatAge(halfAge!)}で破綻する。`}
+          ? `${formatAge(result.endAge)}時点でも${assetRateLabel}が50%を上回る。${sexLabel}の平均余命は${ex.toFixed(1)}年（${formatAge(Math.round(deathAge))}）。資産曲線の平均は${meanYears.toFixed(0)}年（終了年齢で打ち切り）。`
+          : `${sexLabel}の平均余命は${ex.toFixed(1)}年。${assetRateLabel}が50%以下になるのは${formatAge(halfAge!)}（${assetYears}年後）。`}
       </p>
       <div className="h-48 w-full overflow-hidden sm:h-56">
         <ResponsiveContainer width="100%" height="100%">
@@ -89,13 +89,16 @@ export function SurvivalChart({ result }: { result: SimResult }) {
             <Tooltip
               content={({ active, payload, label }) => {
                 if (!active || !payload?.length) return null;
-                const asset = payload.find((p) => p.dataKey === "asset")?.value as number | undefined;
+                const asset = payload.find((p) => p.dataKey === "asset")?.value as
+                  number | undefined;
                 const life = payload.find((p) => p.dataKey === "life")?.value as number | undefined;
                 return (
                   <div className="rounded-md bg-surface-2 px-3 py-2 text-xs shadow-[var(--shadow-border)]">
                     <p className="font-medium text-fg">{formatAge(Number(label))}</p>
                     {asset != null ? (
-                      <p className="tabular-nums text-accent">資産 {formatPct(asset)}</p>
+                      <p className="tabular-nums text-accent">
+                        {assetRateLabel} {formatPct(asset)}
+                      </p>
                     ) : null}
                     {life != null ? (
                       <p className="tabular-nums text-fire">生命 {formatPct(life)}</p>
@@ -111,7 +114,7 @@ export function SurvivalChart({ result }: { result: SimResult }) {
             <Line
               type="stepAfter"
               dataKey="asset"
-              name="資産"
+              name={assetRateLabel}
               stroke="var(--color-accent)"
               strokeWidth={2}
               dot={false}
@@ -132,7 +135,7 @@ export function SurvivalChart({ result }: { result: SimResult }) {
       <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-fg-subtle">
         <span className="inline-flex items-center gap-1.5">
           <i className="inline-block h-0.5 w-3 bg-accent" />
-          資産が持つ割合
+          {assetCurveLabel}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <i className="inline-block h-0.5 w-3 bg-fire" />
@@ -142,7 +145,8 @@ export function SurvivalChart({ result }: { result: SimResult }) {
       </div>
       <p className="mt-3 text-[11px] leading-relaxed text-fg-subtle">
         生命は{LIFE_TABLE.publisher}
-        {LIFE_TABLE.name}（{LIFE_TABLE.year}年）の{sexLabel}、現在年齢から条件付き。経路は死なない。比較用。
+        {LIFE_TABLE.name}（{LIFE_TABLE.year}年）の{sexLabel}
+        、現在年齢から条件付き。経路は死なない。比較用。
       </p>
     </div>
   );
@@ -169,7 +173,7 @@ function CompareStat({
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg-sunken">
         <div
           className={cn("h-full rounded-full", tone === "asset" ? "bg-accent" : "bg-fire")}
-          style={{ width: `${Math.min(100, Math.max(4, fill * 100))}%` }}
+          style={{ width: `${Math.min(100, Math.max(0, fill * 100))}%` }}
         />
       </div>
     </div>

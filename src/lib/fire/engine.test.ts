@@ -76,6 +76,16 @@ describe("simulate", () => {
     const result = simulate(plan);
     assert.equal(result.ruinCount, 200);
     assert.equal(result.successRate, 0);
+    assert.equal(result.survival.at(-1), result.successRate);
+    assert.deepEqual(result.periodFailureCounts, {
+      throughAge80: 200,
+      age81To100: 0,
+      afterAge100: 0,
+    });
+    assert.equal(
+      Object.values(result.periodFailureCounts).reduce((sum, count) => sum + count, 0),
+      result.ruinCount,
+    );
     assert.ok(result.medianRuinAge !== null);
     assert.equal(result.ruinStory?.marketMaxDrawdown, 0);
     assert.equal(result.ruinStory?.maxDrawdown, -1);
