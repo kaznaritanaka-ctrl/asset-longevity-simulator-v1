@@ -21,11 +21,14 @@ export function buildRuinStory(args: {
   const officialAge = args.ruinAge ?? endAge;
   const depletedIdx = wealth.findIndex((w) => w <= 0);
   const officialIdx = Math.max(0, Math.min(wealth.length - 1, officialAge - currentAge));
-  const ecoIdx =
-    depletedIdx >= 0 ? Math.min(depletedIdx, officialIdx) : officialIdx;
+  const ecoIdx = depletedIdx >= 0 ? Math.min(depletedIdx, officialIdx) : officialIdx;
   const ruinAge = currentAge + ecoIdx;
   const ruinIdx = ecoIdx;
   const horizonIdx = role === "median" || !ruined ? wealth.length - 1 : ruinIdx;
+  const balanceDrawdownHorizonIdx =
+    ruined && depletedIdx >= 0 && depletedIdx <= horizonIdx
+      ? Math.max(0, depletedIdx - 1)
+      : horizonIdx;
   const yearsToRuin = (role === "median" ? endAge : ruinAge) - currentAge;
 
   const years: StoryYear[] = wealth.map((w, i) => ({
@@ -38,7 +41,7 @@ export function buildRuinStory(args: {
 
   let peak = wealth[0] ?? 0;
   let maxDrawdown = 0;
-  for (let i = 0; i <= horizonIdx; i++) {
+  for (let i = 0; i <= balanceDrawdownHorizonIdx; i++) {
     const w = wealth[i] ?? 0;
     if (w > peak) peak = w;
     if (peak > 0) {
@@ -61,7 +64,8 @@ export function buildRuinStory(args: {
   for (const annualReturn of retToHorizon) {
     marketIndex *= Math.max(0, 1 + annualReturn);
     if (marketIndex > marketPeak) marketPeak = marketIndex;
-    if (marketPeak > 0) marketMaxDrawdown = Math.min(marketMaxDrawdown, marketIndex / marketPeak - 1);
+    if (marketPeak > 0)
+      marketMaxDrawdown = Math.min(marketMaxDrawdown, marketIndex / marketPeak - 1);
   }
   let worstYear = 0;
   let worstAge: number | null = null;
@@ -72,7 +76,9 @@ export function buildRuinStory(args: {
 
   const preStart = Math.max(0, horizonIdx - 5);
   const preSlice = returns.slice(preStart, horizonIdx);
-  const preRuin5yAvg = preSlice.length ? preSlice.reduce((a, b) => a + b, 0) / preSlice.length : null;
+  const preRuin5yAvg = preSlice.length
+    ? preSlice.reduce((a, b) => a + b, 0) / preSlice.length
+    : null;
 
   let cumulativeWithdrawal = 0;
   let cumulativeTax = 0;
@@ -170,7 +176,9 @@ function narrate(s: {
       parts.push(`FIRE後10年の実質CAGRは${signedPct(s.fire10yCagr)}。`);
     }
     if (s.maxDrawdown <= -0.2 && s.maxDrawdown > -0.95) {
-      parts.push(`途中、ピーク${formatManYen(s.peak)}から${formatPct(s.maxDrawdown, 0)}まで沈んだ。`);
+      parts.push(
+        `途中、ピーク${formatManYen(s.peak)}から${formatPct(s.maxDrawdown, 0)}まで沈んだ。`,
+      );
     }
     if (s.cumulativeWithdrawal > 0) {
       const taxBit = s.cumulativeTax > 0 ? `うち税が${formatManYen(s.cumulativeTax)}。` : "";
@@ -222,7 +230,9 @@ function narrate(s: {
     s.worstYear <= -0.22 &&
     (s.worstAge >= s.fireAge || s.ruinAge - s.worstAge <= 12)
   ) {
-    parts.push(`最悪年は${formatAge(s.worstAge)}で${signedPct(s.worstYear)}。その年が残った資産を削った。`);
+    parts.push(
+      `最悪年は${formatAge(s.worstAge)}で${signedPct(s.worstYear)}。その年が残った資産を削った。`,
+    );
   }
 
   if (s.cumulativeWithdrawal > 0) {

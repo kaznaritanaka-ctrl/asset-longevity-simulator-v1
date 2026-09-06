@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { formatAge, formatManYen, formatPct } from "@/lib/fire/format";
+import { formatAge, formatInt, formatManYen, formatPct } from "@/lib/fire/format";
 import type { RuinStory } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
 import { usePlanStore } from "@/store/plan-store";
@@ -8,6 +8,11 @@ function signedPct(decimal: number | null, digits = 1): string {
   if (decimal == null || !Number.isFinite(decimal)) return "—";
   const body = formatPct(Math.abs(decimal), digits);
   return `${decimal < 0 ? "−" : "+"}${body}`;
+}
+
+function balanceDrawdownPct(decimal: number, excludesDepletionYear: boolean): string {
+  if (excludesDepletionYear && decimal > -1 && decimal <= -0.9995) return "−99.9%超";
+  return formatPct(decimal, excludesDepletionYear ? 1 : 0);
 }
 
 export function RuinStoryCard({
@@ -29,6 +34,12 @@ export function RuinStoryCard({
 
   const isMedian = story.role === "median";
   const canDrawAnother = !isMedian && story.ruinCount > 1;
+  const failureYearIndex = story.years.findIndex((year) => year.age >= story.ruinAge);
+  const balanceBeforeFailure =
+    !isMedian && story.ruined && failureYearIndex > 0
+      ? (story.years[failureYearIndex - 1]?.wealth ?? null)
+      : null;
+  const excludedDepletionYear = !isMedian && story.ruined && story.terminal <= 0;
 
   return (
     <section
@@ -79,8 +90,8 @@ export function RuinStoryCard({
           value={`${story.yearsToRuin}年`}
         />
         <Metric
-          label="入出金込みの残高最大減少"
-          value={formatPct(story.maxDrawdown, 0)}
+          label={excludedDepletionYear ? "枯渇年を除く残高最大減少" : "入出金込みの残高最大減少"}
+          value={balanceDrawdownPct(story.maxDrawdown, excludedDepletionYear)}
           warn={story.maxDrawdown <= -0.3}
         />
         <Metric
@@ -108,20 +119,27 @@ export function RuinStoryCard({
         />
         <Metric label="累計取り崩し額" value={formatManYen(story.cumulativeWithdrawal)} />
         <Metric label="累計税負担" value={formatManYen(story.cumulativeTax)} />
+        <Metric
+          label={balanceBeforeFailure != null ? "枯渇直前の年末残高" : "開始時残高"}
+          value={formatManYen(balanceBeforeFailure ?? story.years[0]?.wealth ?? 0)}
+        />
+        <Metric label="期間中のピーク残高" value={formatManYen(story.peak)} />
+        <Metric
+          label={isMedian ? "全試行数" : "この年齢帯の該当経路"}
+          value={`${formatInt(isMedian ? story.trials : story.ruinCount)}経路`}
+        />
       </dl>
+
+      <p className="mt-4 rounded-lg bg-bg-sunken px-3 py-2.5 text-xs leading-relaxed text-fg-muted">
+        {isMedian
+          ? "この線は、各年齢の中央値の帯に最も近い実在経路1本です。分位帯全体そのものではありません。"
+          : `この1本は、同じ年齢帯で${failureLabel}した${formatInt(story.ruinCount)}経路から抽出した例です。平均や中央的な経路ではないため、頻度は上の割合と件数で確認してください。`}
+      </p>
     </section>
   );
 }
 
-function Metric({
-  label,
-  value,
-  warn,
-}: {
-  label: string;
-  value: string;
-  warn?: boolean;
-}) {
+function Metric({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
   return (
     <div className="min-w-0">
       <dt className="text-[11px] leading-snug break-words text-fg-subtle">{label}</dt>
@@ -155,7 +173,9 @@ function Spark({
   const pad = 2;
   const x = (i: number) => (i / (n - 1)) * w;
   const y = (v: number) => pad + (1 - v / max) * (h - pad * 2);
-  const d = vals.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const d = vals
+    .map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`)
+    .join(" ");
   const fireI = story.years.findIndex((yr) => yr.age >= fireAge);
   const ruinI = story.years.findIndex((yr) => yr.age >= story.ruinAge);
   const stroke = isMedian ? "var(--color-median)" : "var(--color-ruin)";

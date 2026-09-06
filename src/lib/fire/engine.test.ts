@@ -88,7 +88,8 @@ describe("simulate", () => {
     );
     assert.ok(result.medianRuinAge !== null);
     assert.equal(result.ruinStory?.marketMaxDrawdown, 0);
-    assert.equal(result.ruinStory?.maxDrawdown, -1);
+    assert.ok(Math.abs((result.ruinStory?.maxDrawdown ?? 0) - -0.8) < 1e-12);
+    assert.equal(result.ruinStory?.years.at(-1)?.wealth, 0);
   });
 
   it("provides a representative story for each populated ruin-age period", () => {

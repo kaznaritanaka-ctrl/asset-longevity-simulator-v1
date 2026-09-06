@@ -157,7 +157,7 @@ export function RuinRiskSummary({
         story={selectedStory}
         fireAge={result.fireAge}
         embedded
-        heading={`${selectedSegment.label}の代表経路`}
+        heading={`${selectedSegment.label}したシナリオ例`}
         failureLabel={failureLabel}
       />
     </section>
