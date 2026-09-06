@@ -1,12 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { SegmentedControl } from "@/components/ui/segmented";
 import { expectedDeathAge } from "@/lib/fire/life-table";
-import type { Sex, StoryRole } from "@/lib/fire/types";
+import type { RuinPeriod, Sex } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
 import { FanChart, type ChartScale } from "./fan-chart";
 import { ModelNotes } from "./model-notes";
-import { PercentileTable } from "./percentile-table";
-import { RuinStoryCard } from "./ruin-story";
 import { RuinRiskSummary } from "./ruin-risk-summary";
 import { SurvivalChart } from "./survival-chart";
 import { usePlanStore } from "@/store/plan-store";
@@ -26,7 +24,7 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
   const sex = usePlanStore((s) => (s.plan.sex === "female" ? "female" : "male"));
   const patchPlan = usePlanStore((s) => s.patchPlan);
   const [scale, setScale] = useState<ChartScale>("log");
-  const [pathKind, setPathKind] = useState<StoryRole>("ruin");
+  const [selectedPeriod, setSelectedPeriod] = useState<RuinPeriod>("throughAge80");
 
   if (!result) {
     return (
@@ -36,13 +34,20 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
     );
   }
 
-  const featured = pathKind === "median" ? result.medianStory : result.ruinStory;
+  const firstAvailablePeriod = (
+    ["throughAge80", "age81To100", "afterAge100", "survived"] as const
+  ).find((period) => result.periodStories[period]);
+  const activePeriod = result.periodStories[selectedPeriod]
+    ? selectedPeriod
+    : (firstAvailablePeriod ?? "survived");
+  const featured = result.periodStories[activePeriod];
+  const pathKind = featured?.role ?? "ruin";
   const deathAge = expectedDeathAge(result.currentAge, sex);
 
   return (
     <div className={cn("grid min-w-0 grid-cols-1 gap-4", wide && "xl:grid-cols-2")}>
       <div className="min-w-0">
-        <RuinRiskSummary result={result} />
+        <RuinRiskSummary result={result} selected={activePeriod} onSelect={setSelectedPeriod} />
       </div>
 
       <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
@@ -75,15 +80,6 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
         </ClientChart>
       </section>
 
-      <div className="min-w-0">
-        <RuinStoryCard
-          story={featured}
-          pathKind={pathKind}
-          onPathKindChange={setPathKind}
-          fireAge={result.fireAge}
-        />
-      </div>
-
       <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
         <header className="mb-3 flex flex-wrap items-start justify-between gap-2">
           <div>
@@ -106,13 +102,6 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
         <ClientChart heightClass="h-48 sm:h-56">
           <SurvivalChart result={result} />
         </ClientChart>
-      </section>
-
-      <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
-        <header className="mb-3">
-          <h2 className="font-display text-lg text-fg">分位表</h2>
-        </header>
-        <PercentileTable result={result} />
       </section>
 
       <div className="min-w-0">

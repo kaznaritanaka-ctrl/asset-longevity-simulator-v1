@@ -75,6 +75,8 @@ export type StoryYear = {
 
 export type StoryRole = "ruin" | "median";
 
+export type RuinPeriod = "throughAge80" | "age81To100" | "afterAge100" | "survived";
+
 export type RuinStory = {
   trialIndex: number;
   role: StoryRole;
@@ -108,6 +110,7 @@ export type SimResult = {
   samplePaths: SamplePath[];
   ruinStory: RuinStory | null;
   medianStory: RuinStory | null;
+  periodStories: Record<RuinPeriod, RuinStory | null>;
   medianRuinAge: number | null;
   fireAge: number;
   currentAge: number;

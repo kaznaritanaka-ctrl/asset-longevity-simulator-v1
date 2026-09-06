@@ -1,4 +1,4 @@
-import type { Plan, RuinRule, SamplePath, SimResult } from "./types";
+import type { Plan, RuinPeriod, RuinRule, SamplePath, SimResult } from "./types";
 import {
   cholesky,
   gaussian,
@@ -73,6 +73,12 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
       samplePaths: [],
       ruinStory: null,
       medianStory: null,
+      periodStories: {
+        throughAge80: null,
+        age81To100: null,
+        afterAge100: null,
+        survived: null,
+      },
       medianRuinAge: null,
       fireAge,
       currentAge,
@@ -221,7 +227,7 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
     samplePaths.push({ values, ruined: ruined[i] === 1 });
   }
 
-  const ruinStory = pickRuinStory({
+  const storyArgs = {
     wealth,
     rets,
     sold,
@@ -237,7 +243,8 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
     ruinCount,
     seed: plan.seed,
     storyNonce,
-  });
+  };
+  const ruinStory = pickRuinStory(storyArgs);
 
   const medianStory = pickMedianStory({
     wealth,
@@ -255,6 +262,12 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
     ruinCount,
     p50,
   });
+  const periodStories = {
+    throughAge80: pickRuinStory(storyArgs, "throughAge80"),
+    age81To100: pickRuinStory(storyArgs, "age81To100"),
+    afterAge100: pickRuinStory(storyArgs, "afterAge100"),
+    survived: medianStory,
+  } satisfies Record<RuinPeriod, ReturnType<typeof pickRuinStory>>;
 
   return {
     trials,
@@ -278,6 +291,7 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
     samplePaths,
     ruinStory,
     medianStory,
+    periodStories,
     medianRuinAge: ruinedAges.length ? percentile(ruinedAges, 0.5) : null,
     fireAge,
     currentAge,
@@ -289,29 +303,32 @@ export function simulate(plan: Plan, storyNonce = 0): SimResult {
   };
 }
 
-function pickRuinStory(args: {
-  wealth: Float64Array;
-  rets: Float64Array;
-  sold: Float64Array;
-  taxPaid: Float64Array;
-  ruined: Uint8Array;
-  ruinAge: Int16Array;
-  trials: number;
-  T: number;
-  years: number;
-  currentAge: number;
-  fireAge: number;
-  endAge: number;
-  ruinCount: number;
-  seed: number;
-  storyNonce: number;
-}) {
+function pickRuinStory(
+  args: {
+    wealth: Float64Array;
+    rets: Float64Array;
+    sold: Float64Array;
+    taxPaid: Float64Array;
+    ruined: Uint8Array;
+    ruinAge: Int16Array;
+    trials: number;
+    T: number;
+    years: number;
+    currentAge: number;
+    fireAge: number;
+    endAge: number;
+    ruinCount: number;
+    seed: number;
+    storyNonce: number;
+  },
+  period?: Exclude<RuinPeriod, "survived">,
+) {
   const { wealth, rets, sold, taxPaid, ruined, ruinAge, trials, T, years } = args;
   const ruinedIdx: number[] = [];
   let worst = 0;
   let worstW = Infinity;
   for (let i = 0; i < trials; i++) {
-    if (ruined[i]) ruinedIdx.push(i);
+    if (ruined[i] && (!period || isRuinAgeInPeriod(ruinAge[i]!, period))) ruinedIdx.push(i);
     else {
       const tw = wealth[i * T + (T - 1)]!;
       if (tw < worstW) {
@@ -320,6 +337,7 @@ function pickRuinStory(args: {
       }
     }
   }
+  if (period && ruinedIdx.length === 0) return null;
   const pickRng = mulberry32(
     (args.seed ^ (Math.imul(args.storyNonce + 1, 0x9e3779b9) >>> 0)) >>> 0,
   );
@@ -342,10 +360,19 @@ function pickRuinStory(args: {
     fireAge: args.fireAge,
     endAge: args.endAge,
     trialIndex: chosen,
-    ruinCount: args.ruinCount,
+    ruinCount: period ? ruinedIdx.length : args.ruinCount,
     trials,
     role: "ruin",
   });
+}
+
+function isRuinAgeInPeriod(
+  age: number,
+  period: Exclude<RuinPeriod, "survived">,
+): boolean {
+  if (period === "throughAge80") return age <= 80;
+  if (period === "age81To100") return age > 80 && age <= 100;
+  return age > 100;
 }
 
 function pickMedianStory(args: {

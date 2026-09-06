@@ -79,6 +79,31 @@ describe("simulate", () => {
     assert.ok(result.medianRuinAge !== null);
   });
 
+  it("provides a representative story for each populated ruin-age period", () => {
+    const makeDoomed = (currentAge: number, endAge: number) =>
+      simulate(
+        basePlan({
+          currentAge,
+          fireAge: currentAge,
+          endAge,
+          currentAssets: 1_000,
+          annualSpend: 100,
+          assets: [oneAsset({ expectedReturnPct: 0, volatilityPct: 0 })],
+        }),
+      );
+
+    const early = makeDoomed(60, 80);
+    assert.ok((early.periodStories.throughAge80?.ruinAge ?? Infinity) <= 80);
+    assert.equal(early.periodStories.age81To100, null);
+
+    const middle = makeDoomed(81, 100);
+    assert.ok((middle.periodStories.age81To100?.ruinAge ?? 0) > 80);
+    assert.ok((middle.periodStories.age81To100?.ruinAge ?? Infinity) <= 100);
+
+    const late = makeDoomed(100, 110);
+    assert.ok((late.periodStories.afterAge100?.ruinAge ?? 0) > 100);
+  });
+
   it("adds contributions during accumulation only", () => {
     const plan = basePlan({
       currentAge: 40,

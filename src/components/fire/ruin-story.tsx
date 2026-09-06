@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { SegmentedControl } from "@/components/ui/segmented";
 import { formatAge, formatManYen, formatPct } from "@/lib/fire/format";
-import type { RuinStory, StoryRole } from "@/lib/fire/types";
+import type { RuinStory } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
 import { usePlanStore } from "@/store/plan-store";
 
@@ -13,42 +12,34 @@ function signedPct(decimal: number | null, digits = 1): string {
 
 export function RuinStoryCard({
   story,
-  pathKind,
-  onPathKindChange,
   fireAge,
+  embedded = false,
+  heading = "代表シナリオ",
 }: {
   story: RuinStory | null;
-  pathKind: StoryRole;
-  onPathKindChange: (k: StoryRole) => void;
   fireAge: number;
+  embedded?: boolean;
+  heading?: string;
 }) {
   const drawAnotherStory = usePlanStore((s) => s.drawAnotherStory);
 
   if (!story) return null;
 
-  const isMedian = pathKind === "median";
+  const isMedian = story.role === "median";
   const canDrawAnother = !isMedian && story.ruinCount > 1;
 
   return (
     <section
       className={cn(
-        "min-w-0 max-w-full rounded-xl p-3.5 shadow-[var(--shadow-border)] sm:p-5 md:p-6",
-        isMedian ? "bg-surface" : story.ruined ? "bg-ruin-soft" : "bg-surface",
+        "min-w-0 max-w-full",
+        embedded
+          ? "mt-5 border-t border-border pt-4"
+          : "rounded-xl p-3.5 shadow-[var(--shadow-border)] sm:p-5 md:p-6",
+        !embedded && (isMedian ? "bg-surface" : story.ruined ? "bg-ruin-soft" : "bg-surface"),
       )}
     >
       <header className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-lg text-fg">シナリオ別表示</h2>
-        <div className="shrink-0">
-          <SegmentedControl
-            ariaLabel="シナリオ"
-            value={pathKind}
-            onChange={onPathKindChange}
-            options={[
-              { id: "ruin", label: "破綻" },
-              { id: "median", label: "中央値" },
-            ]}
-          />
-        </div>
+        <h3 className="font-display text-base text-fg sm:text-lg">{heading}</h3>
       </header>
 
       <div className="mt-3 flex flex-wrap items-end justify-between gap-2">
