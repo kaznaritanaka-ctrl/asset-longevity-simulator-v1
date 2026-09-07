@@ -96,7 +96,7 @@ export function FanChart({
   const yMax = isLog ? niceLogMax(rawMax) : rawMax;
 
   return (
-    <div className={fill ? "h-full min-h-0 w-full overflow-hidden" : "h-64 w-full overflow-hidden sm:h-80"}>
+    <div className={fill ? "h-64 w-full overflow-hidden lg:h-full lg:min-h-0" : "h-64 w-full overflow-hidden sm:h-80"}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart
           key={scale}

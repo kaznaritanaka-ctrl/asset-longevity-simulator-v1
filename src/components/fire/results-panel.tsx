@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { SegmentedControl } from "@/components/ui/segmented";
 import { expectedDeathAge } from "@/lib/fire/life-table";
 import type { RuinPeriod, Sex } from "@/lib/fire/types";
+import { cn } from "@/lib/utils";
 import { FanChart, type ChartScale } from "./fan-chart";
 import { RuinRiskSummary } from "./ruin-risk-summary";
 import { RuinStoryCard } from "./ruin-story";
@@ -52,7 +53,7 @@ export function ResultsPanel() {
           : "101歳以降に資産枯渇の代表シナリオ";
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-2 lg:grid-rows-2">
+    <div className="grid grid-cols-1 gap-3 lg:min-h-0 lg:flex-1 lg:grid-cols-2 lg:grid-rows-2">
       <Quad>
         <RuinRiskSummary
           result={result}
@@ -74,6 +75,7 @@ export function ResultsPanel() {
 
       <Quad
         title="資産の推移"
+        fill
         action={
           <SegmentedControl
             ariaLabel="縦軸のスケール"
@@ -100,6 +102,7 @@ export function ResultsPanel() {
 
       <Quad
         title="資産寿命と生命寿命の比較"
+        fill
         action={
 
           <SegmentedControl
@@ -125,14 +128,21 @@ export function ResultsPanel() {
 function Quad({
   title,
   action,
+  fill = false,
   children,
 }: {
   title?: string;
   action?: ReactNode;
+  fill?: boolean;
   children: ReactNode;
 }) {
   return (
-    <section className="flex min-h-0 flex-col overflow-hidden rounded-xl bg-surface p-3 shadow-[var(--shadow-border)] sm:p-3.5">
+    <section
+      className={cn(
+        "flex flex-col overflow-hidden rounded-xl bg-surface p-3 shadow-[var(--shadow-border)] sm:p-3.5 lg:min-h-0",
+        fill && "min-h-[18rem]",
+      )}
+    >
       {title ? (
         <header className="mb-2 flex shrink-0 items-center justify-between gap-2">
           <h2 className="type-title min-w-0 text-fg">{title}</h2>

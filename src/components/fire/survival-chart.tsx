@@ -70,7 +70,7 @@ export function SurvivalChart({ result, compact = false }: { result: SimResult; 
             : `${sexLabel}の平均余命は${ex.toFixed(1)}年。${assetRateLabel}が50%以下になるのは${formatAge(halfAge!)}（${assetYears}年後）。`}
         </p>
       )}
-      <div className={cn("min-h-0 w-full", compact ? "flex-1" : "h-48 sm:h-56")}>
+      <div className={cn("w-full", compact ? "h-48 lg:h-full lg:min-h-0 lg:flex-1" : "h-48 sm:h-56")}>
         <ResponsiveContainer width="100%" height="100%" minHeight={120}>
           <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
             <CartesianGrid stroke="var(--color-border)" vertical={false} />
