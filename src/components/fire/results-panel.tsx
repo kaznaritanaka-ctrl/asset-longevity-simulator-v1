@@ -222,9 +222,9 @@ function Quad({
     <section
       id={id}
       className={cn(
-        "flex-col overflow-hidden rounded-xl bg-surface p-3 shadow-[var(--shadow-border)] sm:p-3.5 lg:min-h-0",
+        "flex-col rounded-xl bg-surface p-3 shadow-[var(--shadow-border)] sm:p-3.5",
         visible ? "flex" : "hidden lg:flex",
-        fill && "min-h-[18rem]",
+        fill ? "min-h-[18rem] lg:min-h-0 lg:overflow-hidden" : "lg:min-h-0 lg:overflow-hidden",
       )}
     >
       {title ? (
@@ -233,7 +233,7 @@ function Quad({
           {action}
         </header>
       ) : null}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
+      <div className="flex flex-1 flex-col lg:min-h-0 lg:overflow-hidden">{children}</div>
     </section>
   );
 }
