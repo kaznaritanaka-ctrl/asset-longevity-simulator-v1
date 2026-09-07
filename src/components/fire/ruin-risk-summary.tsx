@@ -2,6 +2,7 @@ import { formatAge, formatPct } from "@/lib/fire/format";
 import { buildRuinRiskBreakdown } from "@/lib/fire/risk-breakdown";
 import type { RuinPeriod, SimResult } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 import { RuinStoryCard } from "./ruin-story";
 
 function formatRiskRate(value: number, count: number): string {
@@ -169,7 +170,16 @@ export function RuinRiskSummary({
         </div>
         <dl className="mt-3 grid grid-cols-3 divide-x divide-border">
           <DrawdownMetric
-            label="最大ドローダウン中央値"
+            label={
+              <>
+                <span className="hidden lg:inline">最大ドローダウン中央値</span>
+                <span className="lg:hidden">
+                  <span className="whitespace-nowrap tracking-tighter">最大ドローダウン</span>
+                  <br />
+                  中央値
+                </span>
+              </>
+            }
             value={formatDrawdown(result.balanceDrawdown.median)}
           />
           <DrawdownMetric
@@ -194,10 +204,12 @@ export function RuinRiskSummary({
   );
 }
 
-function DrawdownMetric({ label, value }: { label: string; value: string }) {
+function DrawdownMetric({ label, value }: { label: ReactNode; value: string }) {
   return (
     <div className="min-w-0 px-2 first:pl-0 last:pr-0">
-      <dt className="text-[11px] leading-tight text-fg-subtle sm:text-xs">{label}</dt>
+      <dt className="min-h-7 text-[11px] leading-tight text-fg-subtle sm:text-xs lg:min-h-0">
+        {label}
+      </dt>
       <dd className="mt-1 font-display text-lg tabular-nums text-fg">{value}</dd>
     </div>
   );

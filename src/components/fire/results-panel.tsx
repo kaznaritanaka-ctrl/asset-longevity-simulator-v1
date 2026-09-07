@@ -9,10 +9,40 @@ import { RuinRiskSummary } from "./ruin-risk-summary";
 import { SurvivalChart } from "./survival-chart";
 import { usePlanStore } from "@/store/plan-store";
 
-function ClientChart({ children, heightClass }: { children: ReactNode; heightClass: string }) {
+type MobileResultTab = "risk" | "assets" | "life";
+
+const MOBILE_RESULT_TABS: ReadonlyArray<{ id: MobileResultTab; label: string }> = [
+  { id: "risk", label: "破綻リスク" },
+  { id: "assets", label: "資産推移" },
+  { id: "life", label: "寿命比較" },
+];
+
+function useDesktopResultsLayout(): boolean {
+  const [desktop, setDesktop] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 64rem)");
+    const update = () => setDesktop(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+
+  return desktop;
+}
+
+function ClientChart({
+  children,
+  heightClass,
+  active = true,
+}: {
+  children: ReactNode;
+  heightClass: string;
+  active?: boolean;
+}) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  if (!mounted) {
+  if (!mounted || !active) {
     return <div className={`${heightClass} w-full min-w-0 rounded-lg bg-bg-sunken/70`} />;
   }
   return children;
@@ -23,8 +53,10 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
   const status = usePlanStore((s) => s.status);
   const sex = usePlanStore((s) => (s.plan.sex === "female" ? "female" : "male"));
   const patchPlan = usePlanStore((s) => s.patchPlan);
+  const desktopResultsLayout = useDesktopResultsLayout();
   const [scale, setScale] = useState<ChartScale>("log");
   const [selectedPeriod, setSelectedPeriod] = useState<RuinPeriod>("throughAge80");
+  const [mobileTab, setMobileTab] = useState<MobileResultTab>("risk");
 
   if (!result) {
     return (
@@ -46,11 +78,57 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
 
   return (
     <div className={cn("grid min-w-0 grid-cols-1 gap-4", wide && "xl:grid-cols-2")}>
-      <div className="min-w-0">
+      <div
+        className="grid grid-cols-3 gap-1 rounded-lg bg-bg-sunken p-1 lg:hidden"
+        role="tablist"
+        aria-label="結果の表示内容"
+      >
+        {MOBILE_RESULT_TABS.map((tab, index) => (
+          <button
+            key={tab.id}
+            id={`mobile-result-tab-${tab.id}`}
+            type="button"
+            role="tab"
+            aria-selected={mobileTab === tab.id}
+            aria-controls={`mobile-result-panel-${tab.id}`}
+            tabIndex={mobileTab === tab.id ? 0 : -1}
+            onClick={() => setMobileTab(tab.id)}
+            onKeyDown={(event) => {
+              if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+              event.preventDefault();
+              const direction = event.key === "ArrowRight" ? 1 : -1;
+              const nextIndex =
+                (index + direction + MOBILE_RESULT_TABS.length) % MOBILE_RESULT_TABS.length;
+              const nextTab = MOBILE_RESULT_TABS[nextIndex]!;
+              setMobileTab(nextTab.id);
+              document.getElementById(`mobile-result-tab-${nextTab.id}`)?.focus();
+            }}
+            className={cn(
+              "h-11 min-w-0 rounded-md px-2 text-sm font-medium transition-[background-color,color,box-shadow] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+              mobileTab === tab.id
+                ? "bg-surface text-fg shadow-[var(--shadow-border)]"
+                : "text-fg-muted hover:text-fg",
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div
+        id="mobile-result-panel-risk"
+        className={cn("min-w-0 lg:block", mobileTab === "risk" ? "block" : "hidden")}
+      >
         <RuinRiskSummary result={result} selected={activePeriod} onSelect={setSelectedPeriod} />
       </div>
 
-      <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
+      <section
+        id="mobile-result-panel-assets"
+        className={cn(
+          "min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5 lg:block",
+          mobileTab === "assets" ? "block" : "hidden",
+        )}
+      >
         <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-display text-lg text-fg">資産の経路</h2>
           <div className="flex items-center gap-3">
@@ -71,7 +149,10 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
             />
           </div>
         </header>
-        <ClientChart heightClass={cn("h-64 sm:h-80", wide && "xl:h-56")}>
+        <ClientChart
+          heightClass={cn("h-64 sm:h-80", wide && "xl:h-56")}
+          active={desktopResultsLayout || mobileTab === "assets"}
+        >
           <FanChart
             result={result}
             scale={scale}
@@ -82,7 +163,13 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
         </ClientChart>
       </section>
 
-      <section className="min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5">
+      <section
+        id="mobile-result-panel-life"
+        className={cn(
+          "min-w-0 rounded-xl bg-surface p-3.5 shadow-[var(--shadow-border)] sm:p-4 md:p-5 lg:block",
+          mobileTab === "life" ? "block" : "hidden",
+        )}
+      >
         <header className="mb-3 flex flex-wrap items-start justify-between gap-2">
           <div>
             <h2 className="font-display text-lg text-fg">資産寿命と寿命の比較</h2>
@@ -103,12 +190,15 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
             ]}
           />
         </header>
-        <ClientChart heightClass="h-48 sm:h-56">
+        <ClientChart
+          heightClass="h-48 sm:h-56"
+          active={desktopResultsLayout || mobileTab === "life"}
+        >
           <SurvivalChart result={result} />
         </ClientChart>
       </section>
 
-      <div className="min-w-0">
+      <div className={cn("min-w-0 lg:block", mobileTab === "life" ? "block" : "hidden")}>
         <ModelNotes />
       </div>
     </div>
