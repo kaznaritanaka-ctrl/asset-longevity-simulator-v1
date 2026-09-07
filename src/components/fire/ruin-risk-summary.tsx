@@ -2,6 +2,7 @@ import { formatAge, formatManYen, formatPct } from "@/lib/fire/format";
 import { buildRuinRiskBreakdown } from "@/lib/fire/risk-breakdown";
 import type { RuinPeriod, SimResult } from "@/lib/fire/types";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 import { usePlanStore } from "@/store/plan-store";
 import { ShareButtons } from "./share-buttons";
 
@@ -127,7 +128,19 @@ export function RuinRiskSummary({
       >
         <p className="type-caption text-fg-muted">途中経路のリスク（FIRE開始後・入出金込み）</p>
         <dl className="mt-1 grid grid-cols-3 gap-x-3">
-          <Stat label="最大ドローダウン中央値" value={formatDrawdown(result.balanceDrawdown.median)} />
+          <Stat
+            label={
+              <>
+                <span className="hidden lg:inline">最大ドローダウン中央値</span>
+                <span className="lg:hidden">
+                  最大ドローダウン
+                  <br />
+                  中央値
+                </span>
+              </>
+            }
+            value={formatDrawdown(result.balanceDrawdown.median)}
+          />
           <Stat label="30%以上を経験" value={formatPct(result.balanceDrawdown.experienced30Pct, 1)} />
           <Stat label="50%以上を経験" value={formatPct(result.balanceDrawdown.experienced50Pct, 1)} />
         </dl>
@@ -190,7 +203,7 @@ export function RuinRiskSummary({
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: ReactNode; value: string }) {
   return (
     <div className="min-w-0">
       <dt className="type-caption text-fg-muted">{label}</dt>
