@@ -79,7 +79,7 @@ export function ResultsPanel({ wide = false }: { wide?: boolean }) {
   return (
     <div className={cn("grid min-w-0 grid-cols-1 gap-4", wide && "xl:grid-cols-2")}>
       <div
-        className="grid grid-cols-3 gap-1 rounded-lg bg-bg-sunken p-1 lg:hidden"
+        className="sticky top-0 z-30 grid grid-cols-3 gap-1 self-start rounded-lg bg-bg-sunken p-1 shadow-[var(--shadow-border)] lg:hidden"
         role="tablist"
         aria-label="結果の表示内容"
       >

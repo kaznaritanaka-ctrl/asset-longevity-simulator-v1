@@ -95,11 +95,11 @@ function Home() {
   const wide = desktopLayout === "wide";
 
   return (
-    <div className="min-h-dvh overflow-x-hidden bg-bg text-fg">
+    <div className="min-h-dvh overflow-x-clip bg-bg text-fg">
       <AppHeader />
       <main
         className={cn(
-          "mx-auto w-full min-w-0 overflow-x-hidden px-3 pb-28 pt-5 sm:px-4 md:px-6 md:pb-16 md:pt-8",
+          "mx-auto w-full min-w-0 overflow-x-clip px-3 pb-28 pt-5 sm:px-4 md:px-6 md:pb-16 md:pt-8",
           wide ? "max-w-[1600px]" : "max-w-6xl",
         )}
       >
