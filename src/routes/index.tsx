@@ -73,16 +73,18 @@ function Home() {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-bg text-fg lg:h-dvh lg:overflow-hidden">
+    <div className="flex min-h-dvh flex-col overflow-x-clip bg-bg text-fg lg:h-dvh lg:overflow-hidden">
       <AppHeader />
-      <main className="mx-auto flex w-full min-w-0 flex-1 flex-col overflow-x-hidden px-3 py-3 sm:px-4 lg:min-h-0 lg:flex-row lg:gap-4 lg:overflow-hidden lg:px-4 lg:py-3">
-        <div className="grid grid-cols-2 gap-1 rounded-lg bg-bg-sunken p-1 lg:hidden">
-          <TabButton active={tab === "setup"} onClick={() => setTab("setup")}>
-            条件
-          </TabButton>
-          <TabButton active={tab === "results"} onClick={openResults}>
-            結果
-          </TabButton>
+      <main className="mx-auto flex w-full min-w-0 flex-1 flex-col overflow-x-clip px-3 py-3 sm:px-4 lg:min-h-0 lg:flex-row lg:gap-4 lg:overflow-hidden lg:px-4 lg:py-3">
+        <div className="sticky top-0 z-40 -mx-3 bg-bg px-3 pb-1 lg:static lg:mx-0 lg:hidden lg:bg-transparent lg:px-0 lg:pb-0">
+          <div className="grid grid-cols-2 gap-1 rounded-lg bg-bg-sunken p-1">
+            <TabButton active={tab === "setup"} onClick={() => setTab("setup")}>
+              条件
+            </TabButton>
+            <TabButton active={tab === "results"} onClick={openResults}>
+              結果
+            </TabButton>
+          </div>
         </div>
 
         <div

@@ -88,7 +88,7 @@ export function ResultsPanel() {
   return (
     <div className="flex min-w-0 flex-col gap-3 lg:min-h-0 lg:flex-1">
       <div
-        className="grid grid-cols-3 gap-1 rounded-lg bg-bg-sunken p-1 lg:hidden"
+        className="sticky top-[3.25rem] z-30 grid w-full grid-cols-3 gap-1 self-start rounded-lg bg-bg-sunken p-1 shadow-[var(--shadow-border)] lg:hidden"
         role="tablist"
         aria-label="結果の表示内容"
       >
