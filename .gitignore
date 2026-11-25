@@ -1,4 +1,7 @@
 node_modules/
+dist/
+.vercel/
+.grok/
 .project_id
 .github_repo
 .env

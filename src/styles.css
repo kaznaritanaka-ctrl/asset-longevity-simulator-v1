@@ -2,10 +2,10 @@
 @import "tw-animate-css";
 
 @theme {
-  --font-sans: "IBM Plex Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
-    "Noto Sans JP", sans-serif;
+  --font-sans: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+    system-ui, sans-serif;
   --font-display: "Zen Old Mincho", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  --font-mono: "IBM Plex Sans JP", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: "Noto Sans JP", ui-monospace, "SF Mono", Menlo, monospace;
 
   /* 5-step type scale: caption / body / title / metric / hero */
   --text-xs: 0.75rem; /* 12 caption */
@@ -19,41 +19,42 @@
   --text-5xl: 3rem;
   --text-6xl: 3rem;
 
-  --color-bg: #f3efe6;
-  --color-bg-sunken: #e8e2d4;
-  --color-surface: #faf7f0;
-  --color-surface-2: #fffdf8;
-  --color-fg: #1c1a16;
-  --color-fg-muted: #6a655a;
-  --color-fg-subtle: #8a8478;
-  --color-border: #d8d0c2;
-  --color-border-strong: #c2b9a8;
-  --color-accent: #23463a;
-  --color-accent-fg: #f4f0e6;
-  --color-accent-soft: #dfe8e3;
-  --color-ruin: #8d3b32;
-  --color-ruin-fg: #faf7f0;
-  --color-ruin-soft: #f3e4e1;
-  --color-survive: #23463a;
-  --color-survive-soft: #dce8e2;
-  --color-fire: #6b5344;
-  --color-band-outer: #c5d4cc;
-  --color-band-inner: #8eaea0;
-  --color-median: #23463a;
-  --color-phase-accum: #e7efe9;
-  --color-phase-withdraw: #f3ebe4;
-  --color-ring: #23463a;
+  /* Hub design tokens (design-tokens.css v0.1) mapped onto the app roles. */
+  --color-bg: #ffffff;
+  --color-bg-sunken: #f4f7f3;
+  --color-surface: #ffffff;
+  --color-surface-2: #f4f7f3;
+  --color-fg: #1f2a2e;
+  --color-fg-muted: #5a6670;
+  --color-fg-subtle: #7c8791;
+  --color-border: #dfe6e1;
+  --color-border-strong: #b7c4bc;
+  --color-accent: #23785f;
+  --color-accent-fg: #ffffff;
+  --color-accent-soft: #eaf5f0;
+  --color-ruin: #b3261e;
+  --color-ruin-fg: #ffffff;
+  --color-ruin-soft: #f9dedc;
+  --color-survive: #23785f;
+  --color-survive-soft: #eaf5f0;
+  --color-fire: #8a5a14;
+  --color-band-outer: #bcd8cd;
+  --color-band-inner: #7fb3a1;
+  --color-median: #23785f;
+  --color-phase-accum: #eaf5f0;
+  --color-phase-withdraw: #fbf1df;
+  --color-ring: #23785f;
 
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 26px;
+  --radius-lg: 12px;
+  --radius-xl: 12px;
 
   --shadow-border:
-    0px 0px 0px 1px rgb(28 26 22 / 0.06),
-    0px 1px 2px -1px rgb(28 26 22 / 0.06),
-    0px 2px 4px 0px rgb(28 26 22 / 0.04);
+    0px 0px 0px 1px rgb(31 42 46 / 0.06),
+    0px 1px 2px -1px rgb(31 42 46 / 0.06),
+    0px 2px 4px 0px rgb(31 42 46 / 0.04);
 }
 
 @layer base {
@@ -109,9 +110,11 @@
     }
   }
 
+  /* DADS-style focus indicator, shared with the hub design system. */
   *:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline: 3px solid #000000;
+    outline-offset: 1px;
+    box-shadow: 0 0 0 5px #ffd43d;
   }
 
   input[type="number"]::-webkit-outer-spin-button,
@@ -135,7 +138,7 @@
   .type-body {
     font-family: var(--font-sans);
     font-size: var(--text-sm);
-    line-height: 1.55;
+    line-height: 1.7;
     font-weight: 400;
   }
   .type-title {
